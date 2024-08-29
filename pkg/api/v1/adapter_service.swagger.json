@@ -1,0 +1,362 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Random Service API",
+    "description": "API for various random operations and information retrieval",
+    "version": "1.0"
+  },
+  "tags": [
+    {
+      "name": "RandomService"
+    }
+  ],
+  "schemes": [
+    "http"
+  ],
+  "consumes": [
+    "application/grpc"
+  ],
+  "produces": [
+    "application/grpc"
+  ],
+  "paths": {
+    "/api/v1/long-operation": {
+      "post": {
+        "summary": "Perform a long operation",
+        "description": "Initiates a long operation and returns streaming updates about its progress",
+        "operationId": "RandomService_PerformLongOperation",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/v1LongOperationResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/googlerpcStatus"
+                }
+              },
+              "title": "Stream result of v1LongOperationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1LongOperationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "operations"
+        ]
+      }
+    },
+    "/api/v1/person": {
+      "get": {
+        "summary": "Get person information",
+        "description": "Returns an example of person information",
+        "operationId": "RandomService_GetPerson",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1Person"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "person"
+        ]
+      }
+    },
+    "/api/v1/random-number": {
+      "get": {
+        "summary": "Get a random number",
+        "description": "Returns a random number from 0 to 99",
+        "operationId": "RandomService_GetRandomNumber",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1NumberResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "random"
+        ]
+      }
+    },
+    "/api/v1/random-quote": {
+      "get": {
+        "summary": "Get a random quote",
+        "description": "Returns a random quote from a predefined list",
+        "operationId": "RandomService_GetRandomQuote",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1QuoteResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "random"
+        ]
+      }
+    },
+    "/api/v1/text-length": {
+      "post": {
+        "summary": "Get text length",
+        "description": "Returns the number of characters in the provided text",
+        "operationId": "RandomService_GetLen",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TxtResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TxtRequest"
+            }
+          }
+        ],
+        "tags": [
+          "text"
+        ]
+      }
+    },
+    "/api/v1/time": {
+      "get": {
+        "summary": "Get current time",
+        "description": "Returns the current server time",
+        "operationId": "RandomService_GetCurrentTime",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TimeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "time"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "v1LongOperationRequest": {
+      "type": "object"
+    },
+    "v1LongOperationResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/v1LongOperationResponseStatus",
+          "description": "Operation status"
+        },
+        "message": {
+          "type": "string",
+          "description": "Progress message"
+        },
+        "progress": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Completion percentage (0-100)"
+        },
+        "result": {
+          "type": "string",
+          "description": "Operation result (if completed)"
+        }
+      }
+    },
+    "v1LongOperationResponseStatus": {
+      "type": "string",
+      "enum": [
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "default": "IN_PROGRESS"
+    },
+    "v1NumberResponse": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "format": "int32",
+          "example": 42,
+          "description": "Random number from 0 to 99"
+        }
+      }
+    },
+    "v1Parent": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "John Doe",
+          "description": "Parent's name"
+        }
+      }
+    },
+    "v1Person": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "example": "Alice",
+          "description": "Person's name"
+        },
+        "age": {
+          "type": "integer",
+          "format": "int32",
+          "example": 30,
+          "description": "Person's age"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of children's names"
+        },
+        "parent": {
+          "$ref": "#/definitions/v1Parent"
+        }
+      }
+    },
+    "v1QuoteResponse": {
+      "type": "object",
+      "properties": {
+        "quote": {
+          "type": "string",
+          "example": "The only way to do great work is to love what you do.",
+          "description": "Random quote"
+        }
+      }
+    },
+    "v1TimeResponse": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2023-04-01T12:00:00Z",
+          "description": "Current time"
+        }
+      }
+    },
+    "v1TxtRequest": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "example": "Hello, world!",
+          "description": "Text to analyze"
+        }
+      }
+    },
+    "v1TxtResponse": {
+      "type": "object",
+      "properties": {
+        "number": {
+          "type": "integer",
+          "format": "int64",
+          "example": 13,
+          "description": "Text length (number of characters)"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "X-API-Key",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}
