@@ -19,6 +19,7 @@ CONFIG_DIR := $(CURDIR)/configs
 # ============================== Includes
 include .make/get-started.mk
 include .make/proto.mk
+include .make/lint.mk
 
 
 

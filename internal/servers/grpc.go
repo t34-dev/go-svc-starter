@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"math/rand"
+	"net"
+	"time"
+
 	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"log"
-	"math/rand"
-	"net"
-	"time"
 )
 
 var _ adapterservice.RandomServiceServer = &server{}
@@ -76,6 +77,7 @@ func (s *server) GetRandomQuote(ctx context.Context, req *adapterservice.EmptyRe
 		return &adapterservice.QuoteResponse{Quote: quotes[rand.Intn(len(quotes))]}, nil
 	}
 }
+
 func (s *server) PerformLongOperation(req *adapterservice.LongOperationRequest, stream adapterservice.RandomService_PerformLongOperationServer) error {
 	log.Println("Starting long operation")
 

@@ -19,11 +19,6 @@ proto-vendor:
 			curl https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/master/protoc-gen-openapiv2/options/openapiv2.proto > api/protoc-gen-openapiv2/options/openapiv2.proto ;\
 		fi
 
-#proto-deps:
-#	go get -u google.golang.org/protobuf/cmd/protoc-gen-go
-#	go get -u google.golang.org/grpc/cmd/protoc-gen-go-grpc
-#	go get -u github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
-
 proto:
 	@mkdir -p pkg/api
 	@protoc --proto_path api \
@@ -49,3 +44,6 @@ protoc-client-test:
       -d '{}' \
       127.0.0.1:50051 \
       myservice.RandomService/GetCurrentTime
+
+
+.PHONY: proto-plugin proto-vendor proto protoc-client-test

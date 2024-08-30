@@ -7,13 +7,14 @@
 package adapterservice
 
 import (
+	reflect "reflect"
+	sync "sync"
+
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
-	reflect "reflect"
-	sync "sync"
 )
 
 const (
@@ -115,8 +116,7 @@ type TimeResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Time *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=time,proto3" json:"time,omitempty"`
+	Time          *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=time,proto3" json:"time,omitempty"`
 }
 
 func (x *TimeResponse) Reset() {
@@ -162,8 +162,7 @@ type NumberResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Number int32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
+	Number        int32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
 }
 
 func (x *NumberResponse) Reset() {
@@ -209,8 +208,7 @@ type QuoteResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Quote string `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
+	Quote         string `protobuf:"bytes,1,opt,name=quote,proto3" json:"quote,omitempty"`
 }
 
 func (x *QuoteResponse) Reset() {
@@ -294,11 +292,10 @@ type LongOperationResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Status   LongOperationResponse_Status `protobuf:"varint,1,opt,name=status,proto3,enum=adapterservice.v1.LongOperationResponse_Status" json:"status,omitempty"`
-	Message  string                       `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	Progress int32                        `protobuf:"varint,3,opt,name=progress,proto3" json:"progress,omitempty"`
-	Result   string                       `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
+	Message       string                       `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	Result        string                       `protobuf:"bytes,4,opt,name=result,proto3" json:"result,omitempty"`
+	Progress      int32                        `protobuf:"varint,3,opt,name=progress,proto3" json:"progress,omitempty"`
+	Status        LongOperationResponse_Status `protobuf:"varint,1,opt,name=status,proto3,enum=adapterservice.v1.LongOperationResponse_Status" json:"status,omitempty"`
 }
 
 func (x *LongOperationResponse) Reset() {
@@ -365,8 +362,7 @@ type TxtRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Text string `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	Text          string `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
 }
 
 func (x *TxtRequest) Reset() {
@@ -412,8 +408,7 @@ type TxtResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Number uint32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
+	Number        uint32 `protobuf:"varint,1,opt,name=number,proto3" json:"number,omitempty"`
 }
 
 func (x *TxtResponse) Reset() {
@@ -459,8 +454,7 @@ type Parent struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Name          string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 }
 
 func (x *Parent) Reset() {
@@ -506,11 +500,10 @@ type Person struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
-
-	Name     string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Age      int32    `protobuf:"varint,2,opt,name=age,proto3" json:"age,omitempty"`
-	Children []string `protobuf:"bytes,3,rep,name=children,proto3" json:"children,omitempty"`
-	Parent   *Parent  `protobuf:"bytes,4,opt,name=parent,proto3" json:"parent,omitempty"`
+	Name          string   `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Parent        *Parent  `protobuf:"bytes,4,opt,name=parent,proto3" json:"parent,omitempty"`
+	Age           int32    `protobuf:"varint,2,opt,name=age,proto3" json:"age,omitempty"`
+	Children      []string `protobuf:"bytes,3,rep,name=children,proto3" json:"children,omitempty"`
 }
 
 func (x *Person) Reset() {

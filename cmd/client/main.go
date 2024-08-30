@@ -3,13 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
+	"log"
+	"time"
+
 	grpcpool "github.com/t34-dev/go-grpc-pool"
 	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
-	"log"
-	"time"
 )
 
 func main() {
@@ -31,8 +32,7 @@ func main() {
 	}
 	defer grpcPool.Close()
 	conn, err := grpcPool.Get()
-	//conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
-
+	// conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
 	}

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/t34-dev/go-svc-starter/internal/servers"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/t34-dev/go-svc-starter/internal/servers"
 )
 
 func main() {

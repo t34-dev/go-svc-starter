@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
 	"log"
 	"time"
+
+	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
 
 	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"go.uber.org/zap"

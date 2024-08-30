@@ -3,14 +3,15 @@ package servers
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func SwaggerServe(ctx context.Context) error {

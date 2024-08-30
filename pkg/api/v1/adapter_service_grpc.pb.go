@@ -8,6 +8,7 @@ package adapterservice
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -141,8 +142,7 @@ type RandomServiceServer interface {
 }
 
 // UnimplementedRandomServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedRandomServiceServer struct {
-}
+type UnimplementedRandomServiceServer struct{}
 
 func (UnimplementedRandomServiceServer) GetCurrentTime(context.Context, *EmptyRequest) (*TimeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentTime not implemented")
