@@ -35,15 +35,13 @@ proto:
 		api/v1/adapter_service.proto
 	@echo "Done"
 
-
-protoc-client-test:
-	grpcurl -plaintext \
-      -proto ./api/v1/adapter_service.proto \
-      -import-path ./api \
-      -import-path $GOPATH/pkg/mod \
-      -d '{}' \
-      127.0.0.1:50051 \
-      myservice.RandomService/GetCurrentTime
+proto-test:
+	$(BIN_DIR)/grpcurl$(APP_EXT) -plaintext \
+		-proto ./api/v1/adapter_service.proto \
+		-import-path ./api \
+		-d '{}' \
+		127.0.0.1:50051 \
+		adapterservice.v1.RandomService/GetPing
 
 
-.PHONY: proto-plugin proto-vendor proto protoc-client-test
+.PHONY: proto-plugin proto-vendor proto proto-test

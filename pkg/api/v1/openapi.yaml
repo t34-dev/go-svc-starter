@@ -51,6 +51,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /api/v1/ping:
+        get:
+            tags:
+                - RandomService
+            operationId: RandomService_GetPing
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PongResponse'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /api/v1/random-number:
         get:
             tags:
@@ -184,6 +202,11 @@ components:
                         type: string
                 parent:
                     $ref: '#/components/schemas/Parent'
+        PongResponse:
+            type: object
+            properties:
+                text:
+                    type: string
         QuoteResponse:
             type: object
             properties:

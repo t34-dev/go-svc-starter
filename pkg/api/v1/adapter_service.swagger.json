@@ -87,6 +87,29 @@
         ]
       }
     },
+    "/api/v1/ping": {
+      "get": {
+        "summary": "Ping server",
+        "operationId": "RandomService_GetPing",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1PongResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "test"
+        ]
+      }
+    },
     "/api/v1/random-number": {
       "get": {
         "summary": "Get a random number",
@@ -301,6 +324,16 @@
         },
         "parent": {
           "$ref": "#/definitions/v1Parent"
+        }
+      }
+    },
+    "v1PongResponse": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "example": "pong",
+          "description": "Server response"
         }
       }
     },

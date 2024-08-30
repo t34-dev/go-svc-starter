@@ -37,6 +37,15 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 
 // RandomService provides various methods for obtaining random data and performing operations
 service RandomService {
+	rpc GetPing(EmptyRequest) returns (PongResponse) {
+		option (google.api.http) = {
+			get: "/api/v1/ping"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Ping server"
+			tags: ["test"]
+		};
+	}
 	// Get current time
 	rpc GetCurrentTime(EmptyRequest) returns (TimeResponse) {
 		option (google.api.http) = {
@@ -114,6 +123,12 @@ service RandomService {
 
 // Other message definitions remain unchanged
 message EmptyRequest {}
+message PongResponse {
+	string text = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Server response"
+		example: "\"pong\""
+	}];
+}
 
 message TimeResponse {
 	google.protobuf.Timestamp time = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {

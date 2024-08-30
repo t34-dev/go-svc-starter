@@ -24,7 +24,9 @@ include .make/lint.mk
 
 
 ################################# DEV
-build: env-development
-	@go build -o .bin/$(APP_NAME)$(APP_EXT) cmd/*
-run: build
-	@.bin/$(APP_NAME)${APP_EXT}
+NAME_SERVER=server
+
+build-server:
+	go build -o .bin/$(NAME_SERVER)$(APP_EXT) cmd/server/*
+server: build-server
+	@.bin/$(NAME_SERVER)${APP_EXT}

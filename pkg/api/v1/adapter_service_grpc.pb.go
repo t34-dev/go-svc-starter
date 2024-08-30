@@ -8,7 +8,6 @@ package adapterservice
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -23,6 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RandomServiceClient interface {
+	GetPing(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*PongResponse, error)
 	// Get current time
 	GetCurrentTime(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*TimeResponse, error)
 	// Get a random number
@@ -43,6 +43,15 @@ type randomServiceClient struct {
 
 func NewRandomServiceClient(cc grpc.ClientConnInterface) RandomServiceClient {
 	return &randomServiceClient{cc}
+}
+
+func (c *randomServiceClient) GetPing(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*PongResponse, error) {
+	out := new(PongResponse)
+	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetPing", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *randomServiceClient) GetCurrentTime(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*TimeResponse, error) {
@@ -126,6 +135,7 @@ func (c *randomServiceClient) GetPerson(ctx context.Context, in *EmptyRequest, o
 // All implementations must embed UnimplementedRandomServiceServer
 // for forward compatibility
 type RandomServiceServer interface {
+	GetPing(context.Context, *EmptyRequest) (*PongResponse, error)
 	// Get current time
 	GetCurrentTime(context.Context, *EmptyRequest) (*TimeResponse, error)
 	// Get a random number
@@ -142,8 +152,12 @@ type RandomServiceServer interface {
 }
 
 // UnimplementedRandomServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedRandomServiceServer struct{}
+type UnimplementedRandomServiceServer struct {
+}
 
+func (UnimplementedRandomServiceServer) GetPing(context.Context, *EmptyRequest) (*PongResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPing not implemented")
+}
 func (UnimplementedRandomServiceServer) GetCurrentTime(context.Context, *EmptyRequest) (*TimeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCurrentTime not implemented")
 }
@@ -173,6 +187,24 @@ type UnsafeRandomServiceServer interface {
 
 func RegisterRandomServiceServer(s grpc.ServiceRegistrar, srv RandomServiceServer) {
 	s.RegisterService(&RandomService_ServiceDesc, srv)
+}
+
+func _RandomService_GetPing_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmptyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RandomServiceServer).GetPing(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/adapterservice.v1.RandomService/GetPing",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RandomServiceServer).GetPing(ctx, req.(*EmptyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _RandomService_GetCurrentTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -293,6 +325,10 @@ var RandomService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "adapterservice.v1.RandomService",
 	HandlerType: (*RandomServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetPing",
+			Handler:    _RandomService_GetPing_Handler,
+		},
 		{
 			MethodName: "GetCurrentTime",
 			Handler:    _RandomService_GetCurrentTime_Handler,

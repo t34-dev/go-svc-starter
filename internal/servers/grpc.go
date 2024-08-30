@@ -22,6 +22,11 @@ type server struct {
 	adapterservice.UnimplementedRandomServiceServer
 }
 
+func (s *server) GetPing(context.Context, *adapterservice.EmptyRequest) (*adapterservice.PongResponse, error) {
+	return &adapterservice.PongResponse{
+		Text: "pong",
+	}, nil
+}
 func (s *server) GetLen(ctx context.Context, req *adapterservice.TxtRequest) (*adapterservice.TxtResponse, error) {
 	if req == nil {
 		return nil, errors.New("GetLen: TxtRequest is empty")

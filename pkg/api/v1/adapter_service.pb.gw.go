@@ -31,6 +31,24 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
+func request_RandomService_GetPing_0(ctx context.Context, marshaler runtime.Marshaler, client RandomServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq EmptyRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GetPing(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_RandomService_GetPing_0(ctx context.Context, marshaler runtime.Marshaler, server RandomServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq EmptyRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GetPing(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
 func request_RandomService_GetCurrentTime_0(ctx context.Context, marshaler runtime.Marshaler, client RandomServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq EmptyRequest
 	var metadata runtime.ServerMetadata
@@ -167,6 +185,31 @@ func local_request_RandomService_GetPerson_0(ctx context.Context, marshaler runt
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterRandomServiceHandlerFromEndpoint instead.
 func RegisterRandomServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server RandomServiceServer) error {
+
+	mux.Handle("GET", pattern_RandomService_GetPing_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/adapterservice.v1.RandomService/GetPing", runtime.WithHTTPPathPattern("/api/v1/ping"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_RandomService_GetPing_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RandomService_GetPing_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
 
 	mux.Handle("GET", pattern_RandomService_GetCurrentTime_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
@@ -341,6 +384,28 @@ func RegisterRandomServiceHandler(ctx context.Context, mux *runtime.ServeMux, co
 // "RandomServiceClient" to call the correct interceptors.
 func RegisterRandomServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client RandomServiceClient) error {
 
+	mux.Handle("GET", pattern_RandomService_GetPing_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		var err error
+		var annotatedContext context.Context
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/adapterservice.v1.RandomService/GetPing", runtime.WithHTTPPathPattern("/api/v1/ping"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_RandomService_GetPing_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
+		if err != nil {
+			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_RandomService_GetPing_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	mux.Handle("GET", pattern_RandomService_GetCurrentTime_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -477,6 +542,8 @@ func RegisterRandomServiceHandlerClient(ctx context.Context, mux *runtime.ServeM
 }
 
 var (
+	pattern_RandomService_GetPing_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "ping"}, ""))
+
 	pattern_RandomService_GetCurrentTime_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "time"}, ""))
 
 	pattern_RandomService_GetRandomNumber_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "random-number"}, ""))
@@ -491,6 +558,8 @@ var (
 )
 
 var (
+	forward_RandomService_GetPing_0 = runtime.ForwardResponseMessage
+
 	forward_RandomService_GetCurrentTime_0 = runtime.ForwardResponseMessage
 
 	forward_RandomService_GetRandomNumber_0 = runtime.ForwardResponseMessage
