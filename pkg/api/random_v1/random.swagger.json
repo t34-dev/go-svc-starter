@@ -32,13 +32,13 @@
               "type": "object",
               "properties": {
                 "result": {
-                  "$ref": "#/definitions/v1LongOperationResponse"
+                  "$ref": "#/definitions/random_v1LongOperationResponse"
                 },
                 "error": {
                   "$ref": "#/definitions/googlerpcStatus"
                 }
               },
-              "title": "Stream result of v1LongOperationResponse"
+              "title": "Stream result of random_v1LongOperationResponse"
             }
           },
           "default": {
@@ -54,7 +54,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1LongOperationRequest"
+              "$ref": "#/definitions/random_v1LongOperationRequest"
             }
           }
         ],
@@ -72,7 +72,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1Person"
+              "$ref": "#/definitions/random_v1Person"
             }
           },
           "default": {
@@ -95,7 +95,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1PongResponse"
+              "$ref": "#/definitions/random_v1PongResponse"
             }
           },
           "default": {
@@ -119,7 +119,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1NumberResponse"
+              "$ref": "#/definitions/random_v1NumberResponse"
             }
           },
           "default": {
@@ -143,7 +143,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1QuoteResponse"
+              "$ref": "#/definitions/random_v1QuoteResponse"
             }
           },
           "default": {
@@ -167,7 +167,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1TxtResponse"
+              "$ref": "#/definitions/random_v1TxtResponse"
             }
           },
           "default": {
@@ -183,7 +183,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/v1TxtRequest"
+              "$ref": "#/definitions/random_v1TxtRequest"
             }
           }
         ],
@@ -201,7 +201,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/v1TimeResponse"
+              "$ref": "#/definitions/random_v1TimeResponse"
             }
           },
           "default": {
@@ -246,14 +246,14 @@
       },
       "additionalProperties": {}
     },
-    "v1LongOperationRequest": {
+    "random_v1LongOperationRequest": {
       "type": "object"
     },
-    "v1LongOperationResponse": {
+    "random_v1LongOperationResponse": {
       "type": "object",
       "properties": {
         "status": {
-          "$ref": "#/definitions/v1LongOperationResponseStatus",
+          "$ref": "#/definitions/random_v1LongOperationResponseStatus",
           "description": "Operation status"
         },
         "message": {
@@ -271,7 +271,7 @@
         }
       }
     },
-    "v1LongOperationResponseStatus": {
+    "random_v1LongOperationResponseStatus": {
       "type": "string",
       "enum": [
         "IN_PROGRESS",
@@ -280,7 +280,7 @@
       ],
       "default": "IN_PROGRESS"
     },
-    "v1NumberResponse": {
+    "random_v1NumberResponse": {
       "type": "object",
       "properties": {
         "number": {
@@ -291,7 +291,7 @@
         }
       }
     },
-    "v1Parent": {
+    "random_v1Parent": {
       "type": "object",
       "properties": {
         "name": {
@@ -301,7 +301,7 @@
         }
       }
     },
-    "v1Person": {
+    "random_v1Person": {
       "type": "object",
       "properties": {
         "name": {
@@ -323,11 +323,11 @@
           "description": "List of children's names"
         },
         "parent": {
-          "$ref": "#/definitions/v1Parent"
+          "$ref": "#/definitions/random_v1Parent"
         }
       }
     },
-    "v1PongResponse": {
+    "random_v1PongResponse": {
       "type": "object",
       "properties": {
         "text": {
@@ -337,7 +337,7 @@
         }
       }
     },
-    "v1QuoteResponse": {
+    "random_v1QuoteResponse": {
       "type": "object",
       "properties": {
         "quote": {
@@ -347,7 +347,7 @@
         }
       }
     },
-    "v1TimeResponse": {
+    "random_v1TimeResponse": {
       "type": "object",
       "properties": {
         "time": {
@@ -358,7 +358,7 @@
         }
       }
     },
-    "v1TxtRequest": {
+    "random_v1TxtRequest": {
       "type": "object",
       "properties": {
         "text": {
@@ -368,7 +368,7 @@
         }
       }
     },
-    "v1TxtResponse": {
+    "random_v1TxtResponse": {
       "type": "object",
       "properties": {
         "number": {

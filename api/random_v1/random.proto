@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package adapterservice.v1;
+package random_v1;
 
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-option go_package = "github.com/t34-dev/go-svc-starter/pkg/api/v1;adapterservice";
+option go_package = "github.com/t34-dev/go-svc-starter/pkg/api/random_v1;random_v1";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 	info: {

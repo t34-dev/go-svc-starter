@@ -18,6 +18,5 @@ workspace:
 	@cd .. && go work use $(shell find .. -maxdepth 2 \( -name "*-service*" -o -name "*-ms-*" -name "*go-*" \) -type d -printf "%f ")
 
 
-
 # Phony targets
 .PHONY: download tidy upgrade kill workspace

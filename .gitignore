@@ -21,4 +21,4 @@ node_modules/
 # proto
 /api/*
 !/api/*.*
-!/api/v1
+!/api/*_v1

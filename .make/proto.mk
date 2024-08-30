@@ -21,6 +21,9 @@ proto-vendor:
 
 proto:
 	@mkdir -p pkg/api
+	@$(MAKE) proto-random
+
+proto-random:
 	@protoc --proto_path api \
 		--go_out=pkg/api --go_opt=paths=source_relative \
 			--plugin=protoc-gen-go=$(BIN_DIR)/protoc-gen-go$(APP_EXT) \
@@ -30,18 +33,18 @@ proto:
 			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
 		--openapiv2_out=pkg/api --openapiv2_opt logtostderr=true,allow_repeated_fields_in_body=true \
 			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
-	  	--openapi_out=pkg/api/v1 \
+	  	--openapi_out=pkg/api/random_v1 \
 			--plugin=protoc-gen-openapi=$(BIN_DIR)/protoc-gen-openapi$(APP_EXT) \
-		api/v1/adapter_service.proto
+		api/random_v1/random.proto
 	@echo "Done"
 
-proto-test:
+proto-test-random:
 	$(BIN_DIR)/grpcurl$(APP_EXT) -plaintext \
-		-proto ./api/v1/adapter_service.proto \
+		-proto api/random_v1/random.proto \
 		-import-path ./api \
 		-d '{}' \
 		127.0.0.1:50051 \
-		adapterservice.v1.RandomService/GetPing
+		random_v1.RandomService/GetPing
 
 
-.PHONY: proto-plugin proto-vendor proto proto-test
+.PHONY: proto-plugin proto-vendor proto proto-random proto-test

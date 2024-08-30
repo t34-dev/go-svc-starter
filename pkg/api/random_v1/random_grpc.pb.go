@@ -2,12 +2,13 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v5.27.3
-// source: v1/adapter_service.proto
+// source: random_v1/random.proto
 
-package adapterservice
+package random_v1
 
 import (
 	context "context"
+
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -47,7 +48,7 @@ func NewRandomServiceClient(cc grpc.ClientConnInterface) RandomServiceClient {
 
 func (c *randomServiceClient) GetPing(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*PongResponse, error) {
 	out := new(PongResponse)
-	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetPing", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/random_v1.RandomService/GetPing", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +57,7 @@ func (c *randomServiceClient) GetPing(ctx context.Context, in *EmptyRequest, opt
 
 func (c *randomServiceClient) GetCurrentTime(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*TimeResponse, error) {
 	out := new(TimeResponse)
-	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetCurrentTime", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/random_v1.RandomService/GetCurrentTime", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func (c *randomServiceClient) GetCurrentTime(ctx context.Context, in *EmptyReque
 
 func (c *randomServiceClient) GetRandomNumber(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*NumberResponse, error) {
 	out := new(NumberResponse)
-	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetRandomNumber", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/random_v1.RandomService/GetRandomNumber", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +75,7 @@ func (c *randomServiceClient) GetRandomNumber(ctx context.Context, in *EmptyRequ
 
 func (c *randomServiceClient) GetRandomQuote(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*QuoteResponse, error) {
 	out := new(QuoteResponse)
-	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetRandomQuote", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/random_v1.RandomService/GetRandomQuote", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,7 @@ func (c *randomServiceClient) GetRandomQuote(ctx context.Context, in *EmptyReque
 }
 
 func (c *randomServiceClient) PerformLongOperation(ctx context.Context, in *LongOperationRequest, opts ...grpc.CallOption) (RandomService_PerformLongOperationClient, error) {
-	stream, err := c.cc.NewStream(ctx, &RandomService_ServiceDesc.Streams[0], "/adapterservice.v1.RandomService/PerformLongOperation", opts...)
+	stream, err := c.cc.NewStream(ctx, &RandomService_ServiceDesc.Streams[0], "/random_v1.RandomService/PerformLongOperation", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +116,7 @@ func (x *randomServicePerformLongOperationClient) Recv() (*LongOperationResponse
 
 func (c *randomServiceClient) GetLen(ctx context.Context, in *TxtRequest, opts ...grpc.CallOption) (*TxtResponse, error) {
 	out := new(TxtResponse)
-	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetLen", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/random_v1.RandomService/GetLen", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +125,7 @@ func (c *randomServiceClient) GetLen(ctx context.Context, in *TxtRequest, opts .
 
 func (c *randomServiceClient) GetPerson(ctx context.Context, in *EmptyRequest, opts ...grpc.CallOption) (*Person, error) {
 	out := new(Person)
-	err := c.cc.Invoke(ctx, "/adapterservice.v1.RandomService/GetPerson", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/random_v1.RandomService/GetPerson", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +200,7 @@ func _RandomService_GetPing_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adapterservice.v1.RandomService/GetPing",
+		FullMethod: "/random_v1.RandomService/GetPing",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RandomServiceServer).GetPing(ctx, req.(*EmptyRequest))
@@ -217,7 +218,7 @@ func _RandomService_GetCurrentTime_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adapterservice.v1.RandomService/GetCurrentTime",
+		FullMethod: "/random_v1.RandomService/GetCurrentTime",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RandomServiceServer).GetCurrentTime(ctx, req.(*EmptyRequest))
@@ -235,7 +236,7 @@ func _RandomService_GetRandomNumber_Handler(srv interface{}, ctx context.Context
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adapterservice.v1.RandomService/GetRandomNumber",
+		FullMethod: "/random_v1.RandomService/GetRandomNumber",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RandomServiceServer).GetRandomNumber(ctx, req.(*EmptyRequest))
@@ -253,7 +254,7 @@ func _RandomService_GetRandomQuote_Handler(srv interface{}, ctx context.Context,
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adapterservice.v1.RandomService/GetRandomQuote",
+		FullMethod: "/random_v1.RandomService/GetRandomQuote",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RandomServiceServer).GetRandomQuote(ctx, req.(*EmptyRequest))
@@ -292,7 +293,7 @@ func _RandomService_GetLen_Handler(srv interface{}, ctx context.Context, dec fun
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adapterservice.v1.RandomService/GetLen",
+		FullMethod: "/random_v1.RandomService/GetLen",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RandomServiceServer).GetLen(ctx, req.(*TxtRequest))
@@ -310,7 +311,7 @@ func _RandomService_GetPerson_Handler(srv interface{}, ctx context.Context, dec 
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/adapterservice.v1.RandomService/GetPerson",
+		FullMethod: "/random_v1.RandomService/GetPerson",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(RandomServiceServer).GetPerson(ctx, req.(*EmptyRequest))
@@ -322,7 +323,7 @@ func _RandomService_GetPerson_Handler(srv interface{}, ctx context.Context, dec 
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var RandomService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "adapterservice.v1.RandomService",
+	ServiceName: "random_v1.RandomService",
 	HandlerType: (*RandomServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
@@ -357,5 +358,5 @@ var RandomService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "v1/adapter_service.proto",
+	Metadata: "random_v1/random.proto",
 }

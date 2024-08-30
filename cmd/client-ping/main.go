@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
+	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
 
 	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"go.uber.org/zap"
@@ -24,10 +24,14 @@ func main() {
 
 	// Define a factory function to create gRPC connections
 	factory := func() (*grpc.ClientConn, error) {
-		return grpc.Dial("localhost:50051",
+		opts := []grpc.DialOption{
 			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithBlock(),
-			grpc.WithTimeout(5*time.Second))
+		}
+		return grpc.NewClient("localhost:50051", opts...)
+		// return grpc.Dial("localhost:50051",
+		//	grpc.WithTransportCredentials(insecure.NewCredentials()),
+		//	grpc.WithBlock(),
+		//	grpc.WithTimeout(5*time.Second))
 	}
 
 	// Create a new connection pool
@@ -61,13 +65,13 @@ func main() {
 			continue
 		}
 
-		client := adapterservice.NewRandomServiceClient(conn.GetConn())
+		client := random_v1.NewRandomServiceClient(conn.GetConn())
 
 		// Select a string from the slice using the remainder of division by the slice length
 		testString := testStrings[i%len(testStrings)]
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		response, err := client.GetLen(ctx, &adapterservice.TxtRequest{Text: testString})
+		response, err := client.GetLen(ctx, &random_v1.TxtRequest{Text: testString})
 		cancel()
 
 		if err != nil {

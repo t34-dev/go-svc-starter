@@ -3,20 +3,21 @@ package servers
 import (
 	"context"
 	"fmt"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	adapterservice "github.com/t34-dev/go-svc-starter/pkg/api/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
+	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 func SwaggerServe(ctx context.Context) error {
 	// GRPC
 	grpcGatewayMux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := adapterservice.RegisterRandomServiceHandlerFromEndpoint(ctx, grpcGatewayMux, grpcAddress, opts)
+	err := random_v1.RegisterRandomServiceHandlerFromEndpoint(ctx, grpcGatewayMux, grpcAddress, opts)
 	if err != nil {
 		return err
 	}
@@ -50,14 +51,14 @@ func SwaggerServe(ctx context.Context) error {
 	return server.ListenAndServe()
 }
 
-func ShutdownSwaggerServe(ctx context.Context) error {
+func ShutdownSwaggerServe(_ context.Context) error {
 	log.Println("Shutting down Swagger server...")
 	return nil
 }
 
 func serveSwagger(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, ".json") {
-		http.ServeFile(w, r, "pkg/api/v1/adapter_service.swagger.json")
+		http.ServeFile(w, r, "pkg/api/random_v1/random.swagger.json")
 	} else {
 		html := `
             <!DOCTYPE html>
@@ -73,7 +74,7 @@ func serveSwagger(w http.ResponseWriter, r *http.Request) {
                 <script>
                     window.onload = function() {
                         SwaggerUIBundle({
-                            url: "/swagger/adapterservice.swagger.json",
+                            url: "/swagger/random_v1.swagger.json",
                             dom_id: '#swagger-ui',
                             presets: [
                                 SwaggerUIBundle.presets.apis,
@@ -93,7 +94,7 @@ func serveSwagger(w http.ResponseWriter, r *http.Request) {
 
 func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, ".yaml") {
-		http.ServeFile(w, r, "pkg/api/v1/openapi.yaml")
+		http.ServeFile(w, r, "pkg/api/random_v1/openapi.yaml")
 	} else {
 		html := `
             <!DOCTYPE html>

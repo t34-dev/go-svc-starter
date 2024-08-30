@@ -1,9 +1,9 @@
 module github.com/t34-dev/go-svc-starter
+
 go 1.22.4
 
 require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0
-	github.com/rakyll/statik v0.1.7
 	github.com/t34-dev/go-grpc-pool v1.0.2
 	go.uber.org/zap v1.27.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240827150818-7e3bb234dfed

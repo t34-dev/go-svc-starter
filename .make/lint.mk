@@ -23,10 +23,10 @@ lint-prepare:
 	@goimports -w .
 
 lint-fix-all: lint-prepare
-	$(LINT_CI) --fix
+	@$(LINT_CI) --fix
 
 lint-fix: lint-prepare
-	$(LINT_CI) --fix --new
+	@$(LINT_CI) --fix --new
 
 lint:
 	@$(LINT_CI)
