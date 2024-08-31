@@ -14,6 +14,7 @@ VERSION ?=
 APP_EXT := $(if $(filter Windows_NT,$(OS)),.exe)
 BIN_DIR := $(CURDIR)/.bin
 DEVOPS_DIR := $(CURDIR)/.devops
+TEMP_DIR := $(CURDIR)/.temp
 ENV_FILE := $(CURDIR)/.env
 SECRET_FILE := $(CURDIR)/.secrets
 CONFIG_DIR := $(CURDIR)/configs
@@ -23,6 +24,8 @@ include .make/proto.mk
 include .make/lint.mk
 
 
+#GOPROXY=direct go list -m -versions PACKAGE
+#go get -u=patch PACKAGE
 
 ################################# DEV
 NAME_SERVER=server

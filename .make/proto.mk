@@ -20,10 +20,10 @@ proto-vendor:
 		fi
 
 proto:
-	@mkdir -p pkg/api
 	@$(MAKE) proto-random
 
 proto-random:
+	@mkdir -p pkg/api
 	@protoc --proto_path api \
 		--go_out=pkg/api --go_opt=paths=source_relative \
 			--plugin=protoc-gen-go=$(BIN_DIR)/protoc-gen-go$(APP_EXT) \

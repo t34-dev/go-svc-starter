@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"io"
 	"log"
+	"time"
 
-	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -15,14 +16,16 @@ import (
 func main() {
 	// Define a factory function to create gRPC connections
 	factory := func() (*grpc.ClientConn, error) {
-		opts := []grpc.DialOption{
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-		}
-		return grpc.NewClient("localhost:50051", opts...)
-		// return grpc.Dial("localhost:50051",
+		//opts := []grpc.DialOption{
 		//	grpc.WithTransportCredentials(insecure.NewCredentials()),
-		//	grpc.WithBlock(),
-		//	grpc.WithTimeout(5*time.Second))
+		//}
+		//return grpc.NewClient("localhost"+constants.Address, opts...)
+		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
+		defer cancel()
+
+		return grpc.DialContext(ctx, "localhost:50051",
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+			grpc.WithBlock())
 	}
 
 	// Create a new connection pool
