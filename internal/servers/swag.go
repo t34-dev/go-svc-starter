@@ -14,7 +14,6 @@ import (
 )
 
 func SwaggerServe(ctx context.Context) error {
-	// GRPC
 	grpcGatewayMux := runtime.NewServeMux()
 	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
 	err := random_v1.RegisterRandomServiceHandlerFromEndpoint(ctx, grpcGatewayMux, grpcAddress, opts)
