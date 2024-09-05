@@ -54,4 +54,4 @@ proto-test-random:
 		random_v1.RandomService/GetPing
 
 
-.PHONY: proto-bin proto-vendor proto proto-random proto-test
+.PHONY: proto-bin proto-vendor proto proto-random proto-test-random:
