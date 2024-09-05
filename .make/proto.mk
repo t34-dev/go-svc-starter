@@ -35,18 +35,17 @@ proto:
 
 proto-random:
 	@mkdir -p $(PROTO_OUT)
-	@protoc --proto_path $(PROTO_IN) \
-		-I=$(VENDOR) \
+	@protoc -I $(PROTO_IN) -I=$(VENDOR) \
 		--go_out=$(PROTO_OUT) --go_opt=paths=source_relative \
 			--plugin=protoc-gen-go=$(BIN_DIR)/protoc-gen-go$(APP_EXT) \
 		--go-grpc_out=$(PROTO_OUT) --go-grpc_opt=paths=source_relative \
 			--plugin=protoc-gen-go-grpc=$(BIN_DIR)/protoc-gen-go-grpc$(APP_EXT) \
-		--grpc-gateway_out=$(PROTO_OUT) --grpc-gateway_opt=paths=source_relative \
-			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
-		--openapiv2_out=$(PROTO_OUT) --openapiv2_opt logtostderr=true,allow_repeated_fields_in_body=true \
-			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
 	  	--validate_out lang=go:$(PROTO_OUT) --validate_opt=paths=source_relative \
 			--plugin=protoc-gen-validate=$(BIN_DIR)/protoc-gen-validate$(APP_EXT) \
+		--grpc-gateway_out=$(PROTO_OUT) --grpc-gateway_opt=paths=source_relative \
+			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
+		--openapiv2_out=allow_merge=true,merge_file_name=api:$(PROTO_OUT) \
+			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
 		$(PROTO_IN)/random_v1/random.proto
 	@echo "Done"
 

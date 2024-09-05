@@ -26,7 +26,7 @@ func SwaggerServe(ctx context.Context) error {
 	httpMux.HandleFunc("/swagger/", serveSwagger)
 
 	combinedHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasPrefix(r.URL.Path, "/swagger/") || strings.HasPrefix(r.URL.Path, "/openapi/") {
+		if strings.HasPrefix(r.URL.Path, "/swagger/") {
 			httpMux.ServeHTTP(w, r)
 		} else {
 			grpcGatewayMux.ServeHTTP(w, r)
@@ -34,7 +34,6 @@ func SwaggerServe(ctx context.Context) error {
 	})
 
 	fmt.Printf("%-10s http://%s/swagger/\n", "Swagger:", httpAddress)
-	fmt.Printf("%-10s http://%s/openapi/\n", "Openapi:", httpAddress)
 
 	server := &http.Server{
 		Addr:    ":8081",
@@ -56,7 +55,7 @@ func ShutdownSwaggerServe(_ context.Context) error {
 
 func serveSwagger(w http.ResponseWriter, r *http.Request) {
 	if strings.HasSuffix(r.URL.Path, ".json") {
-		http.ServeFile(w, r, "pkg/api/random_v1/random.swagger.json")
+		http.ServeFile(w, r, "pkg/api/api.swagger.json")
 	} else {
 		html := `
             <!DOCTYPE html>
