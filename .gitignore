@@ -19,6 +19,7 @@ node_modules/
 .devops/.temp/
 
 # proto
+/.vendor.proto
 /api/*
 !/api/*.*
 !/api/*_v1

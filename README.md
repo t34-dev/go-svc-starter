@@ -3,7 +3,7 @@
 
 ```shell
 # install plugins
-make proto-plugin
+make proto-bin
 
 # install proto includes
 make proto-vendor
