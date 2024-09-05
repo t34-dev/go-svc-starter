@@ -22,6 +22,7 @@ CONFIG_DIR := $(CURDIR)/configs
 include .make/get-started.mk
 include .make/proto.mk
 include .make/lint.mk
+include .make/test.mk
 
 
 #GOPROXY=direct go list -m -versions PACKAGE

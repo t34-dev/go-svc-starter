@@ -1,6 +1,6 @@
 test:
 	go clean -testcache
-	go test ../... -covermode=count  -count 3
+	go test ./... -covermode=count  -count 3
 
 test-coverage:
 	go clean -testcache
