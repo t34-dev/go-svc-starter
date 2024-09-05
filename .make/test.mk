@@ -1,4 +1,9 @@
 test:
+	go clean -testcache
+	go test ../... -covermode=count  -count 3
+
+test-coverage:
+	go clean -testcache
 	@mkdir -p $(TEMP_DIR)
 	@CGO_ENABLED=0 go test \
 	. \
