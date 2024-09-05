@@ -3,6 +3,7 @@ module github.com/t34-dev/go-svc-starter
 go 1.22.4
 
 require (
+	github.com/envoyproxy/protoc-gen-validate v1.0.4
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
 	github.com/t34-dev/go-grpc-pool v1.0.4
 	go.uber.org/zap v1.27.0

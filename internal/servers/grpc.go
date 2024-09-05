@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/t34-dev/go-svc-starter/internal/interceptor"
 	"log"
 	"math/rand"
 	"net"
@@ -119,6 +120,7 @@ func (s *server) PerformLongOperation(_ *random_v1.LongOperationRequest, stream 
 func GrpcServe(ctx context.Context) error {
 	grpcServer := grpc.NewServer(
 		grpc.Creds(insecure.NewCredentials()),
+		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
 	)
 	reflection.Register(grpcServer)
 

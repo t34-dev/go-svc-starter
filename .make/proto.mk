@@ -9,14 +9,21 @@ proto-bin:
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.22.0
 	GOBIN=$(BIN_DIR) go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.1
 	GOBIN=$(BIN_DIR) go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
+	GOBIN=$(BIN_DIR) go install github.com/envoyproxy/protoc-gen-validate@v0.10.1
 
 proto-vendor:
 	@mkdir -p $(VENDOR)
 		@if [ ! -d $(VENDOR)/google ]; then \
-			git clone https://github.com/googleapis/googleapis $(VENDOR)/googleapis &&\
 			mkdir -p  $(VENDOR)/google/ &&\
+			git clone https://github.com/googleapis/googleapis $(VENDOR)/googleapis &&\
 			mv $(VENDOR)/googleapis/google/api $(VENDOR)/google &&\
 			rm -rf $(VENDOR)/googleapis ;\
+		fi
+		@if [ ! -d $(VENDOR)/validate ]; then \
+			mkdir -p  $(VENDOR)/validate/ &&\
+			git clone https://github.com/envoyproxy/protoc-gen-validate $(VENDOR)/protoc-gen-validate &&\
+			mv $(VENDOR)/protoc-gen-validate/validate/*.proto $(VENDOR)/validate &&\
+			rm -rf $(VENDOR)/protoc-gen-validate ;\
 		fi
 		@if [ ! -d $(VENDOR)/protoc-gen-openapiv2 ]; then \
 			mkdir -p $(VENDOR)/protoc-gen-openapiv2/options && \
@@ -29,7 +36,7 @@ proto:
 
 proto-random:
 	@mkdir -p $(PROTO_OUT)
-	@protoc --proto_path api \
+	@protoc --proto_path $(PROTO_IN) \
 		-I=$(VENDOR) \
 		--go_out=$(PROTO_OUT) --go_opt=paths=source_relative \
 			--plugin=protoc-gen-go=$(BIN_DIR)/protoc-gen-go$(APP_EXT) \
@@ -41,7 +48,9 @@ proto-random:
 			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
 	  	--openapi_out=$(PROTO_OUT)/random_v1 \
 			--plugin=protoc-gen-openapi=$(BIN_DIR)/protoc-gen-openapi$(APP_EXT) \
-		api/random_v1/random.proto
+	  	--validate_out lang=go:$(PROTO_OUT) --validate_opt=paths=source_relative \
+			--plugin=protoc-gen-validate=$(BIN_DIR)/protoc-gen-validate$(APP_EXT) \
+		$(PROTO_IN)/random_v1/random.proto
 	@echo "Done"
 
 proto-test-random:
@@ -54,4 +63,4 @@ proto-test-random:
 		random_v1.RandomService/GetPing
 
 
-.PHONY: proto-bin proto-vendor proto proto-random proto-test-random:
+.PHONY: proto-bin proto-vendor proto proto-random proto-test-random
