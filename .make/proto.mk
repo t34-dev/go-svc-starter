@@ -5,11 +5,10 @@ VENDOR := $(CURDIR)/.vendor.proto
 proto-bin:
 	GOBIN=$(BIN_DIR) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=$(BIN_DIR) go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
+	GOBIN=$(BIN_DIR) go install github.com/envoyproxy/protoc-gen-validate@v0.10.1
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.15.2
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.22.0
 	GOBIN=$(BIN_DIR) go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.1
-	GOBIN=$(BIN_DIR) go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
-	GOBIN=$(BIN_DIR) go install github.com/envoyproxy/protoc-gen-validate@v0.10.1
 
 proto-vendor:
 	@mkdir -p $(VENDOR)
@@ -46,8 +45,6 @@ proto-random:
 			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
 		--openapiv2_out=$(PROTO_OUT) --openapiv2_opt logtostderr=true,allow_repeated_fields_in_body=true \
 			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
-	  	--openapi_out=$(PROTO_OUT)/random_v1 \
-			--plugin=protoc-gen-openapi=$(BIN_DIR)/protoc-gen-openapi$(APP_EXT) \
 	  	--validate_out lang=go:$(PROTO_OUT) --validate_opt=paths=source_relative \
 			--plugin=protoc-gen-validate=$(BIN_DIR)/protoc-gen-validate$(APP_EXT) \
 		$(PROTO_IN)/random_v1/random.proto

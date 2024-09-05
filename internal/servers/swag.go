@@ -24,7 +24,6 @@ func SwaggerServe(ctx context.Context) error {
 	// SWAGGER
 	httpMux := http.NewServeMux()
 	httpMux.HandleFunc("/swagger/", serveSwagger)
-	httpMux.HandleFunc("/openapi/", serveOpenAPI)
 
 	combinedHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasPrefix(r.URL.Path, "/swagger/") || strings.HasPrefix(r.URL.Path, "/openapi/") {
@@ -74,42 +73,6 @@ func serveSwagger(w http.ResponseWriter, r *http.Request) {
                     window.onload = function() {
                         SwaggerUIBundle({
                             url: "/swagger/random_v1.swagger.json",
-                            dom_id: '#swagger-ui',
-                            presets: [
-                                SwaggerUIBundle.presets.apis,
-                                SwaggerUIBundle.SwaggerUIStandalonePreset
-                            ],
-                            layout: "BaseLayout"
-                        })
-                    }
-                </script>
-            </body>
-            </html>
-        `
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.Write([]byte(html))
-	}
-}
-
-func serveOpenAPI(w http.ResponseWriter, r *http.Request) {
-	if strings.HasSuffix(r.URL.Path, ".yaml") {
-		http.ServeFile(w, r, "pkg/api/random_v1/openapi.yaml")
-	} else {
-		html := `
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>OpenApi UI</title>
-                <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.css" >
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui-bundle.js"> </script>
-            </head>
-            <body>
-                <div id="swagger-ui"></div>
-                <script>
-                    window.onload = function() {
-                        SwaggerUIBundle({
-                            url: "/openapi/openapi.yaml",
                             dom_id: '#swagger-ui',
                             presets: [
                                 SwaggerUIBundle.presets.apis,
