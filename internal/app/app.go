@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/t34-dev/go-svc-starter/internal/api/random"
+	"github.com/t34-dev/go-svc-starter/internal/api/common"
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
-	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
+	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"google.golang.org/grpc/credentials"
 	"log"
 	"net"
@@ -25,7 +25,7 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-const isTSL = true
+const isTSL = false
 
 type App struct {
 	serviceProvider *serviceProvider
@@ -157,7 +157,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	random_v1.RegisterRandomServiceServer(a.grpcServer, random.NewImplementedRandom())
+	common_v1.RegisterCommonV1Server(a.grpcServer, common.NewImplementedRandom())
 
 	return nil
 }
@@ -177,7 +177,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	err = random_v1.RegisterRandomServiceHandlerFromEndpoint(ctx, grpcGatewayMux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err = common_v1.RegisterCommonV1HandlerFromEndpoint(ctx, grpcGatewayMux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
@@ -202,7 +202,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
                 <script>
                     window.onload = function() {
                         SwaggerUIBundle({
-                            url: "/swagger/random_v1.swagger.json",
+                            url: "/swagger/common_v1.swagger.json",
                             dom_id: '#swagger-ui',
                             presets: [
                                 SwaggerUIBundle.presets.apis,

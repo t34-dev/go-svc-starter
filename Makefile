@@ -33,7 +33,8 @@ NAME_SERVER=server
 NAME_CLIENT=client
 
 build-server:
-	go build -o .bin/$(NAME_SERVER)$(APP_EXT) cmd/server/*
+	@rm -f .bin/$(NAME_SERVER)$(APP_EXT)
+	@go build -o .bin/$(NAME_SERVER)$(APP_EXT) cmd/server/*
 server: build-server
 	@.bin/$(NAME_SERVER)${APP_EXT}
 

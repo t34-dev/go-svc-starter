@@ -1,0 +1,179 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "SSO Test Service API",
+    "description": "API for simple user authorization",
+    "version": "1.0"
+  },
+  "tags": [
+    {
+      "name": "CommonV1"
+    }
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/grpc"
+  ],
+  "produces": [
+    "application/grpc"
+  ],
+  "paths": {
+    "/api/CommonV1/GetTime": {
+      "get": {
+        "summary": "Get current time",
+        "description": "Returns the current server time",
+        "operationId": "CommonV1_GetTime",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/common_v1TimeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "CommonV1"
+        ]
+      }
+    },
+    "/api/CommonV1/LongOperation": {
+      "post": {
+        "summary": "Perform a long operation",
+        "description": "Initiates a long operation and returns streaming updates about its progress",
+        "operationId": "CommonV1_LongOperation",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/common_v1LongOperationResponse"
+                },
+                "error": {
+                  "$ref": "#/definitions/googlerpcStatus"
+                }
+              },
+              "title": "Stream result of common_v1LongOperationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/common_v1LongOperationRequest"
+            }
+          }
+        ],
+        "tags": [
+          "CommonV1"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "common_v1LongOperationRequest": {
+      "type": "object"
+    },
+    "common_v1LongOperationResponse": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/common_v1LongOperationResponseStatus",
+          "description": "Operation status"
+        },
+        "message": {
+          "type": "string",
+          "description": "Progress message"
+        },
+        "progress": {
+          "type": "integer",
+          "format": "int32",
+          "description": "Completion percentage (0-100)"
+        },
+        "result": {
+          "type": "string",
+          "description": "Operation result (if completed)"
+        }
+      }
+    },
+    "common_v1LongOperationResponseStatus": {
+      "type": "string",
+      "enum": [
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ],
+      "default": "IN_PROGRESS"
+    },
+    "common_v1TimeResponse": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2023-04-01T12:00:00Z",
+          "description": "Current time"
+        }
+      }
+    },
+    "googlerpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    }
+  },
+  "securityDefinitions": {
+    "ApiKeyAuth": {
+      "type": "apiKey",
+      "name": "X-API-Key",
+      "in": "header"
+    }
+  },
+  "security": [
+    {
+      "ApiKeyAuth": []
+    }
+  ]
+}

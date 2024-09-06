@@ -9,12 +9,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
+	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const isTSL = true
+const isTSL = false
 
 func main() {
 	creds, err := credentials.NewClientTLSFromFile("cert/service.pem", "")
@@ -59,31 +59,31 @@ func main() {
 	}
 	defer conn.Free()
 
-	c := random_v1.NewRandomServiceClient(conn.GetConn())
+	c := common_v1.NewCommonV1Client(conn.GetConn())
 
 	ctx := context.Background()
 
 	// Requests
-	timeResp, err := c.GetCurrentTime(ctx, &random_v1.EmptyRequest{})
+	timeResp, err := c.GetTime(ctx, &common_v1.EmptyRequest{})
 	if err != nil {
 		log.Fatalf("could not get time: %v", err)
 	}
 	fmt.Printf("Current time: %v\n", timeResp.GetTime().AsTime())
 
-	numberResp, err := c.GetRandomNumber(ctx, &random_v1.EmptyRequest{})
+	numberResp, err := c.GetRandomNumber(ctx, &common_v1.EmptyRequest{})
 	if err != nil {
 		log.Fatalf("could not get random number: %v", err)
 	}
-	fmt.Printf("Random number: %d\n", numberResp.GetNumber())
+	fmt.Printf("Common number: %d\n", numberResp.GetNumber())
 
-	quoteResp, err := c.GetRandomQuote(ctx, &random_v1.EmptyRequest{})
+	quoteResp, err := c.GetRandomQuote(ctx, &common_v1.EmptyRequest{})
 	if err != nil {
 		log.Fatalf("could not get random quote: %v", err)
 	}
-	fmt.Printf("Random quote: %s\n", quoteResp.GetQuote())
+	fmt.Printf("Common quote: %s\n", quoteResp.GetQuote())
 
 	txt := "test text"
-	number, err := c.GetLen(ctx, &random_v1.TxtRequest{
+	number, err := c.GetLen(ctx, &common_v1.TxtRequest{
 		Text: txt,
 	})
 	if err != nil {
@@ -91,7 +91,7 @@ func main() {
 	}
 	fmt.Printf("GetLen [%s] - %d\n", txt, number.GetNumber())
 
-	stream, err := c.PerformLongOperation(ctx, &random_v1.LongOperationRequest{})
+	stream, err := c.LongOperation(ctx, &common_v1.LongOperationRequest{})
 	if err != nil {
 		log.Fatalf("could not perform long operation: %v", err)
 	}
@@ -108,7 +108,7 @@ func main() {
 				log.Fatalf("error receiving response: %v", err)
 			}
 			fmt.Printf("Status: %v, Message: %s, Progress: %d%%\n", resp.Status, resp.Message, resp.Progress)
-			if resp.Status == random_v1.LongOperationResponse_COMPLETED {
+			if resp.Status == common_v1.LongOperationResponse_COMPLETED {
 				fmt.Printf("Result: %s\n", resp.Result)
 				done <- true
 				return

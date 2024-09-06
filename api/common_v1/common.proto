@@ -1,0 +1,91 @@
+syntax = "proto3";
+
+package common_v1;
+
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/t34-dev/go-svc-starter/pkg/api/common_v1;common_v1";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+	info: {
+		title: "SSO Test Service API";
+		version: "1.0";
+		description: "API for simple user authorization";
+	};
+	schemes: HTTP;
+	schemes: HTTPS;
+	consumes: "application/grpc";
+	produces: "application/grpc";
+	security_definitions: {
+		security: {
+			key: "ApiKeyAuth";
+			value: {
+				type: TYPE_API_KEY;
+				in: IN_HEADER;
+				name: "X-API-Key";
+			}
+		}
+	}
+	security: {
+		security_requirement: {
+			key: "ApiKeyAuth";
+			value: {};
+		}
+	}
+};
+
+// CommonV1 provides various methods for obtaining random data and performing operations
+service CommonV1 {
+	rpc GetTime(google.protobuf.Empty) returns (TimeResponse) {
+		option (google.api.http) = {
+			get: "/api/CommonV1/GetTime"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Get current time"
+			description: "Returns the current server time"
+		};
+	}
+	rpc LongOperation(LongOperationRequest) returns (stream LongOperationResponse) {
+		option (google.api.http) = {
+			post: "/api/CommonV1/LongOperation"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Perform a long operation"
+			description: "Initiates a long operation and returns streaming updates about its progress"
+		};
+	}
+}
+
+message TimeResponse {
+	google.protobuf.Timestamp time = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Current time"
+		example: "\"2023-04-01T12:00:00Z\""
+	}];
+}
+
+message LongOperationRequest {}
+
+message LongOperationResponse {
+	enum Status {
+		IN_PROGRESS = 0;
+		COMPLETED = 1;
+		FAILED = 2;
+	}
+	Status status = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Operation status"
+	}];
+	string message = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Progress message"
+	}];
+	int32 progress = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Completion percentage (0-100)"
+	}];
+	string result = 4 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Operation result (if completed)"
+	}];
+}

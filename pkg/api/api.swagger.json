@@ -1,44 +1,205 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "Random Service API",
-    "description": "API for various random operations and information retrieval",
-    "version": "1.0"
-  },
-  "tags": [
-    {
-      "name": "RandomService"
-    }
-  ],
-  "schemes": [
-    "http"
-  ],
   "consumes": [
-    "application/grpc"
+    "application/grpc",
+    "application/json"
   ],
   "produces": [
-    "application/grpc"
+    "application/grpc",
+    "application/json"
   ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "API for simple user authorization",
+    "title": "SSO Test Service API",
+    "version": "1.0"
+  },
   "paths": {
-    "/api/v1/long-operation": {
+    "/api/AccessV1/Check": {
       "post": {
-        "summary": "Perform a long operation",
+        "description": "Проверь сервис на возможность использование",
+        "tags": [
+          "AccessV1"
+        ],
+        "summary": "Проверить сервис",
+        "operationId": "AccessV1_Check",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/access_v1CheckRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+    },
+    "/api/AuthV1/Login": {
+      "post": {
+        "description": "Аутентификация пользователя",
+        "tags": [
+          "AuthV1"
+        ],
+        "summary": "Аутентификация пользователя",
+        "operationId": "AuthV1_Login",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/auth_v1LoginRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/auth_v1LoginResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+    },
+    "/api/AuthV1/Logout": {
+      "get": {
+        "description": "Завершить сессию пользователя",
+        "tags": [
+          "AuthV1"
+        ],
+        "summary": "Выйти из пользователя",
+        "operationId": "AuthV1_Logout",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+    },
+    "/api/AuthV1/UpdateToken": {
+      "post": {
+        "description": "Обновление токенов",
+        "tags": [
+          "AuthV1"
+        ],
+        "summary": "Обновление токенов",
+        "operationId": "AuthV1_UpdateToken",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/auth_v1UpdateTokenRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/auth_v1UpdateTokenResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        }
+      }
+    },
+    "/api/CommonV1/GetTime": {
+      "get": {
+        "description": "Returns the current server time",
+        "tags": [
+          "CommonV1"
+        ],
+        "summary": "Get current time",
+        "operationId": "CommonV1_GetTime",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/common_v1TimeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        }
+      }
+    },
+    "/api/CommonV1/LongOperation": {
+      "post": {
         "description": "Initiates a long operation and returns streaming updates about its progress",
-        "operationId": "RandomService_PerformLongOperation",
+        "tags": [
+          "CommonV1"
+        ],
+        "summary": "Perform a long operation",
+        "operationId": "CommonV1_LongOperation",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/common_v1LongOperationRequest"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "A successful response.(streaming responses)",
             "schema": {
               "type": "object",
+              "title": "Stream result of common_v1LongOperationResponse",
               "properties": {
-                "result": {
-                  "$ref": "#/definitions/random_v1LongOperationResponse"
-                },
                 "error": {
                   "$ref": "#/definitions/googlerpcStatus"
+                },
+                "result": {
+                  "$ref": "#/definitions/common_v1LongOperationResponse"
                 }
-              },
-              "title": "Stream result of random_v1LongOperationResponse"
+              }
             }
           },
           "default": {
@@ -47,177 +208,122 @@
               "$ref": "#/definitions/googlerpcStatus"
             }
           }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/random_v1LongOperationRequest"
-            }
-          }
-        ],
-        "tags": [
-          "operations"
-        ]
-      }
-    },
-    "/api/v1/person": {
-      "get": {
-        "summary": "Get person information",
-        "description": "Returns an example of person information",
-        "operationId": "RandomService_GetPerson",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/random_v1Person"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "person"
-        ]
-      }
-    },
-    "/api/v1/ping": {
-      "get": {
-        "summary": "Ping server",
-        "operationId": "RandomService_GetPing",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/random_v1PongResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "test"
-        ]
-      }
-    },
-    "/api/v1/random-number": {
-      "get": {
-        "summary": "Get a random number",
-        "description": "Returns a random number from 0 to 99",
-        "operationId": "RandomService_GetRandomNumber",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/random_v1NumberResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "random"
-        ]
-      }
-    },
-    "/api/v1/random-quote": {
-      "get": {
-        "summary": "Get a random quote",
-        "description": "Returns a random quote from a predefined list",
-        "operationId": "RandomService_GetRandomQuote",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/random_v1QuoteResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "random"
-        ]
-      }
-    },
-    "/api/v1/text-length": {
-      "post": {
-        "summary": "Get text length",
-        "description": "Returns the number of characters in the provided text",
-        "operationId": "RandomService_GetLen",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/random_v1TxtResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/random_v1TxtRequest"
-            }
-          }
-        ],
-        "tags": [
-          "text"
-        ]
-      }
-    },
-    "/api/v1/time": {
-      "get": {
-        "summary": "Get current time",
-        "description": "Returns the current server time",
-        "operationId": "RandomService_GetCurrentTime",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/random_v1TimeResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "time"
-        ]
+        }
       }
     }
   },
   "definitions": {
+    "access_v1CheckRequest": {
+      "type": "object",
+      "properties": {
+        "endpointAddress": {
+          "description": "Endpoint address",
+          "type": "string",
+          "title": "endpoint_address - адрес ресурса, который требуется проверить",
+          "example": "Hello, world!"
+        }
+      }
+    },
+    "auth_v1LoginRequest": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "description": "Password",
+          "type": "string",
+          "example": "qwerty"
+        },
+        "username": {
+          "description": "Username",
+          "type": "string",
+          "example": "root"
+        }
+      }
+    },
+    "auth_v1LoginResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "description": "Access token",
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        },
+        "refreshToken": {
+          "description": "Refresh token",
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjE2Nzg5MCIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.wZ3tAPWpifvkvKEizMMqR8B2QJeD2Q1nFWBRPdE1nrg"
+        }
+      }
+    },
+    "auth_v1UpdateTokenRequest": {
+      "type": "object",
+      "properties": {
+        "refreshToken": {
+          "description": "Refresh token",
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjE2Nzg5MCIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.wZ3tAPWpifvkvKEizMMqR8B2QJeD2Q1nFWBRPdE1nrg"
+        }
+      }
+    },
+    "auth_v1UpdateTokenResponse": {
+      "type": "object",
+      "properties": {
+        "accessToken": {
+          "description": "Access token",
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        },
+        "refreshToken": {
+          "description": "Refresh token",
+          "type": "string",
+          "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjE2Nzg5MCIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.wZ3tAPWpifvkvKEizMMqR8B2QJeD2Q1nFWBRPdE1nrg"
+        }
+      }
+    },
+    "common_v1LongOperationRequest": {
+      "type": "object"
+    },
+    "common_v1LongOperationResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Progress message",
+          "type": "string"
+        },
+        "progress": {
+          "description": "Completion percentage (0-100)",
+          "type": "integer",
+          "format": "int32"
+        },
+        "result": {
+          "description": "Operation result (if completed)",
+          "type": "string"
+        },
+        "status": {
+          "description": "Operation status",
+          "$ref": "#/definitions/common_v1LongOperationResponseStatus"
+        }
+      }
+    },
+    "common_v1LongOperationResponseStatus": {
+      "type": "string",
+      "default": "IN_PROGRESS",
+      "enum": [
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAILED"
+      ]
+    },
+    "common_v1TimeResponse": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "description": "Current time",
+          "type": "string",
+          "format": "date-time",
+          "example": "2023-04-01T12:00:00Z"
+        }
+      }
+    },
     "googlerpcStatus": {
       "type": "object",
       "properties": {
@@ -225,15 +331,15 @@
           "type": "integer",
           "format": "int32"
         },
-        "message": {
-          "type": "string"
-        },
         "details": {
           "type": "array",
           "items": {
             "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
+        },
+        "message": {
+          "type": "string"
         }
       }
     },
@@ -246,136 +352,22 @@
       },
       "additionalProperties": {}
     },
-    "random_v1LongOperationRequest": {
-      "type": "object"
-    },
-    "random_v1LongOperationResponse": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "status": {
-          "$ref": "#/definitions/random_v1LongOperationResponseStatus",
-          "description": "Operation status"
-        },
-        "message": {
-          "type": "string",
-          "description": "Progress message"
-        },
-        "progress": {
+        "code": {
           "type": "integer",
-          "format": "int32",
-          "description": "Completion percentage (0-100)"
+          "format": "int32"
         },
-        "result": {
-          "type": "string",
-          "description": "Operation result (if completed)"
-        }
-      }
-    },
-    "random_v1LongOperationResponseStatus": {
-      "type": "string",
-      "enum": [
-        "IN_PROGRESS",
-        "COMPLETED",
-        "FAILED"
-      ],
-      "default": "IN_PROGRESS"
-    },
-    "random_v1NumberResponse": {
-      "type": "object",
-      "properties": {
-        "number": {
-          "type": "integer",
-          "format": "int32",
-          "example": 42,
-          "description": "Random number from 0 to 99"
-        }
-      }
-    },
-    "random_v1Parent": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "example": "John Doe",
-          "description": "Parent's name"
-        }
-      }
-    },
-    "random_v1Person": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "example": "Alice",
-          "description": "Person's name"
-        },
-        "age": {
-          "type": "integer",
-          "format": "int32",
-          "example": 30,
-          "description": "Person's age"
-        },
-        "children": {
+        "details": {
           "type": "array",
           "items": {
-            "type": "string"
-          },
-          "description": "List of children's names"
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
         },
-        "parent": {
-          "$ref": "#/definitions/random_v1Parent"
-        }
-      }
-    },
-    "random_v1PongResponse": {
-      "type": "object",
-      "properties": {
-        "text": {
-          "type": "string",
-          "example": "pong",
-          "description": "Server response"
-        }
-      }
-    },
-    "random_v1QuoteResponse": {
-      "type": "object",
-      "properties": {
-        "quote": {
-          "type": "string",
-          "example": "The only way to do great work is to love what you do.",
-          "description": "Random quote"
-        }
-      }
-    },
-    "random_v1TimeResponse": {
-      "type": "object",
-      "properties": {
-        "time": {
-          "type": "string",
-          "format": "date-time",
-          "example": "2023-04-01T12:00:00Z",
-          "description": "Current time"
-        }
-      }
-    },
-    "random_v1TxtRequest": {
-      "type": "object",
-      "properties": {
-        "text": {
-          "type": "string",
-          "example": "Hello, world!",
-          "description": "Text to analyze"
-        }
-      }
-    },
-    "random_v1TxtResponse": {
-      "type": "object",
-      "properties": {
-        "number": {
-          "type": "integer",
-          "format": "int64",
-          "example": 13,
-          "description": "Text length (number of characters)"
+        "message": {
+          "type": "string"
         }
       }
     }
@@ -390,6 +382,17 @@
   "security": [
     {
       "ApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "CommonV1"
+    },
+    {
+      "name": "AuthV1"
+    },
+    {
+      "name": "AccessV1"
     }
   ]
 }

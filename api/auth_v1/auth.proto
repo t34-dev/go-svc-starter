@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package auth_v1;
+
+import "google/protobuf/empty.proto";
+import "validate/validate.proto";
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+option go_package = "github.com/t34-dev/go-svc-starter/pkg/api/auth_v1;auth_v1";
+
+// AuthV1 предоставляет методы для аутентификации и обновления токенов
+service AuthV1 {
+	// Login аутентификация пользователя
+	rpc Login (LoginRequest) returns (LoginResponse){
+		option (google.api.http) = {
+			post: "/api/AuthV1/Login"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Аутентификация пользователя"
+			description: "Аутентификация пользователя"
+		};
+	}
+
+	// UpdateToken обновление токенов
+	rpc UpdateToken (UpdateTokenRequest) returns (UpdateTokenResponse){
+		option (google.api.http) = {
+			post: "/api/AuthV1/UpdateToken"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Обновление токенов"
+			description: "Обновление токенов"
+		};
+	}
+
+	// Logout выход из пользователя
+	rpc Logout (google.protobuf.Empty) returns (google.protobuf.Empty){
+		option (google.api.http) = {
+			get: "/api/AuthV1/Logout"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Выйти из пользователя"
+			description: "Завершить сессию пользователя"
+		};
+	}
+}
+
+message LoginRequest {
+	string username = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Username"
+		example: "\"root\""
+	}, (validate.rules).string = {min_len:1, max_len: 50}];
+	string password = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Password"
+		example: "\"qwerty\""
+	}, (validate.rules).string = {min_len:1, max_len: 50}];
+}
+
+message LoginResponse {
+	string access_token = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Access token"
+		example: "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\""
+	}];
+	string refresh_token = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Refresh token"
+		example: "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjE2Nzg5MCIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.wZ3tAPWpifvkvKEizMMqR8B2QJeD2Q1nFWBRPdE1nrg\""
+	}];
+}
+
+message UpdateTokenRequest {
+	string refresh_token = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Refresh token"
+		example: "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjE2Nzg5MCIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.wZ3tAPWpifvkvKEizMMqR8B2QJeD2Q1nFWBRPdE1nrg\""
+	}];
+}
+
+message UpdateTokenResponse {
+	string access_token = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Access token"
+		example: "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c\""
+	}];
+	string refresh_token = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Refresh token"
+		example: "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjE2Nzg5MCIsIm5hbWUiOiJKb2huIERvZSIsImlhdCI6MTUxNjIzOTAyMn0.wZ3tAPWpifvkvKEizMMqR8B2QJeD2Q1nFWBRPdE1nrg\""
+	}];
+}

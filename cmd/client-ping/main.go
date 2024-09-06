@@ -7,7 +7,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
+	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 
 	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"go.uber.org/zap"
@@ -15,7 +15,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-const isTSL = true
+const isTSL = false
 
 func main() {
 	// Initialize logger
@@ -79,13 +79,13 @@ func main() {
 			continue
 		}
 
-		client := random_v1.NewRandomServiceClient(conn.GetConn())
+		client := common_v1.NewCommonV1Client(conn.GetConn())
 
 		// Select a string from the slice using the remainder of division by the slice length
 		testString := testStrings[i%len(testStrings)]
 
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		response, err := client.GetLen(ctx, &random_v1.TxtRequest{Text: testString})
+		response, err := client.GetLen(ctx, &common_v1.TxtRequest{Text: testString})
 		cancel()
 
 		if err != nil {

@@ -9,6 +9,7 @@ proto-bin:
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.15.2
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.22.0
 	GOBIN=$(BIN_DIR) go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.1
+	GOBIN=$(BIN_DIR) go install github.com/go-swagger/go-swagger/cmd/swagger@latest
 
 proto-vendor:
 	@mkdir -p $(VENDOR)
@@ -32,9 +33,12 @@ proto-vendor:
 		fi
 
 proto:
-	@$(MAKE) proto-random
+	@$(MAKE) proto-common
+	@$(MAKE) proto-auth
+	@$(MAKE) proto-access
+	@$(MAKE) proto-merge
 
-proto-random:
+proto-common:
 	@mkdir -p $(PROTO_OUT)
 	@protoc -I $(PROTO_IN) -I=$(VENDOR) \
 		--go_out=$(PROTO_OUT) --go_opt=paths=source_relative \
@@ -45,19 +49,63 @@ proto-random:
 			--plugin=protoc-gen-validate=$(BIN_DIR)/protoc-gen-validate$(APP_EXT) \
 		--grpc-gateway_out=$(PROTO_OUT) --grpc-gateway_opt=paths=source_relative \
 			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
-		--openapiv2_out=allow_merge=true,merge_file_name=api:$(PROTO_OUT) \
+		--openapiv2_out=$(PROTO_OUT) \
 			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
-		$(PROTO_IN)/random_v1/random.proto
-	@echo "Done"
+		$(PROTO_IN)/common_v1/common.proto
+	@echo "common - Done"
 
-proto-test-random:
+proto-auth:
+	@mkdir -p $(PROTO_OUT)
+	@protoc -I $(PROTO_IN) -I=$(VENDOR) \
+		--go_out=$(PROTO_OUT) --go_opt=paths=source_relative \
+			--plugin=protoc-gen-go=$(BIN_DIR)/protoc-gen-go$(APP_EXT) \
+		--go-grpc_out=$(PROTO_OUT) --go-grpc_opt=paths=source_relative \
+			--plugin=protoc-gen-go-grpc=$(BIN_DIR)/protoc-gen-go-grpc$(APP_EXT) \
+	  	--validate_out lang=go:$(PROTO_OUT) --validate_opt=paths=source_relative \
+			--plugin=protoc-gen-validate=$(BIN_DIR)/protoc-gen-validate$(APP_EXT) \
+		--grpc-gateway_out=$(PROTO_OUT) --grpc-gateway_opt=paths=source_relative \
+			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
+		--openapiv2_out=$(PROTO_OUT) \
+			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
+		$(PROTO_IN)/auth_v1/auth.proto
+	@echo "auth - Done"
+
+proto-access:
+	@mkdir -p $(PROTO_OUT)
+	@protoc -I $(PROTO_IN) -I=$(VENDOR) \
+		--go_out=$(PROTO_OUT) --go_opt=paths=source_relative \
+			--plugin=protoc-gen-go=$(BIN_DIR)/protoc-gen-go$(APP_EXT) \
+		--go-grpc_out=$(PROTO_OUT) --go-grpc_opt=paths=source_relative \
+			--plugin=protoc-gen-go-grpc=$(BIN_DIR)/protoc-gen-go-grpc$(APP_EXT) \
+	  	--validate_out lang=go:$(PROTO_OUT) --validate_opt=paths=source_relative \
+			--plugin=protoc-gen-validate=$(BIN_DIR)/protoc-gen-validate$(APP_EXT) \
+		--grpc-gateway_out=$(PROTO_OUT) --grpc-gateway_opt=paths=source_relative \
+			--plugin=protoc-gen-grpc-gateway=$(BIN_DIR)/protoc-gen-grpc-gateway$(APP_EXT) \
+		--openapiv2_out=$(PROTO_OUT) \
+			--plugin=protoc-gen-openapiv2=$(BIN_DIR)/protoc-gen-openapiv2$(APP_EXT) \
+		$(PROTO_IN)/access_v1/access.proto
+	@echo "access - Done"
+
+
+proto-merge:
+	@echo "Merging Swagger files in specified order..."
+	# Common should be first and contain a general description
+	@$(eval SWAGGER_FILES := \
+		$(PROTO_OUT)/common_v1/common.swagger.json \
+		$(PROTO_OUT)/auth_v1/auth.swagger.json \
+		$(PROTO_OUT)/access_v1/access.swagger.json \
+	)
+	@$(BIN_DIR)/swagger$(APP_EXT) mixin $(shell echo $(SWAGGER_FILES)) -o $(PROTO_OUT)/api.swagger.json
+	@echo "Swagger files merged in order"
+
+proto-ping:
 	$(BIN_DIR)/grpcurl$(APP_EXT) -plaintext \
-		-proto $(PROTO_IN)/random_v1/random.proto \
+		-proto $(PROTO_IN)/common_v1/common.proto \
 		-import-path $(PROTO_IN) \
 		-import-path $(VENDOR) \
 		-d '{}' \
 		127.0.0.1:50051 \
-		random_v1.RandomService/GetPing
+		common_v1.CommonV1/GetTime
 
 
-.PHONY: proto-bin proto-vendor proto proto-random proto-test-random
+.PHONY: proto-bin proto-vendor proto proto-common proto-ping

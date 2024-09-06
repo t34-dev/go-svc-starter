@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package access_v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "github.com/t34-dev/go-svc-starter/pkg/api/access_v1;access_v1";
+
+// AccessV1 предоставляет методы для проверки данных через JWT токен
+service AccessV1 {
+	// Check проверяет доступ к указанному адресу
+	rpc Check(CheckRequest) returns (google.protobuf.Empty){
+		option (google.api.http) = {
+			post: "/api/AccessV1/Check"
+			body: "*"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Проверить сервис"
+			description: "Проверь сервис на возможность использование"
+		};
+	}
+}
+
+message CheckRequest {
+	// endpoint_address - адрес ресурса, который требуется проверить
+	string endpoint_address = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Endpoint address"
+		example: "\"Hello, world!\""
+	}, (validate.rules).string = {min_len:1, max_len: 50}];
+}
