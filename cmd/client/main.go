@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	grpcpool "github.com/t34-dev/go-grpc-pool"
+	"google.golang.org/grpc/credentials"
 	"io"
 	"log"
 	"time"
@@ -13,7 +14,23 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const isTSL = true
+
 func main() {
+	creds, err := credentials.NewClientTLSFromFile("cert/service.pem", "")
+	if err != nil {
+		log.Fatalf("failed to load client TLS credentials: %v", err)
+	}
+	opts := []grpc.DialOption{
+		grpc.WithBlock(),
+	}
+
+	if isTSL {
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
 	// Define a factory function to create gRPC connections
 	factory := func() (*grpc.ClientConn, error) {
 		//opts := []grpc.DialOption{
@@ -23,9 +40,7 @@ func main() {
 		ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 		defer cancel()
 
-		return grpc.DialContext(ctx, "localhost:50051",
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithBlock())
+		return grpc.DialContext(ctx, "localhost:50051", opts...)
 	}
 
 	// Create a new connection pool

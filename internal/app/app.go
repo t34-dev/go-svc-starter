@@ -8,6 +8,7 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
 	"github.com/t34-dev/go-svc-starter/pkg/api/random_v1"
+	"google.golang.org/grpc/credentials"
 	"log"
 	"net"
 	"net/http"
@@ -23,6 +24,8 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
+
+const isTSL = true
 
 type App struct {
 	serviceProvider *serviceProvider
@@ -136,10 +139,21 @@ func (a *App) initServiceProvider(_ context.Context) error {
 }
 
 func (a *App) initGRPCServer(ctx context.Context) error {
-	a.grpcServer = grpc.NewServer(
-		grpc.Creds(insecure.NewCredentials()),
+	creds, err := credentials.NewServerTLSFromFile("cert/service.pem", "cert/service.key")
+	if err != nil {
+		return err
+	}
+
+	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(interceptor.ValidateInterceptor),
-	)
+	}
+	if isTSL {
+		opts = append(opts, grpc.Creds(creds))
+	} else {
+		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
+	}
+
+	a.grpcServer = grpc.NewServer(opts...)
 
 	reflection.Register(a.grpcServer)
 
@@ -150,8 +164,20 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 func (a *App) initHTTPServer(ctx context.Context) error {
 	grpcGatewayMux := runtime.NewServeMux()
-	opts := []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}
-	err := random_v1.RegisterRandomServiceHandlerFromEndpoint(ctx, grpcGatewayMux, a.serviceProvider.GRPCConfig().Address(), opts)
+
+	creds, err := credentials.NewClientTLSFromFile("cert/service.pem", "")
+	if err != nil {
+		return fmt.Errorf("failed to load client TLS credentials: %v", err)
+	}
+	opts := []grpc.DialOption{}
+
+	if isTSL {
+		opts = append(opts, grpc.WithTransportCredentials(creds))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	err = random_v1.RegisterRandomServiceHandlerFromEndpoint(ctx, grpcGatewayMux, a.serviceProvider.GRPCConfig().Address(), opts)
 	if err != nil {
 		return err
 	}
