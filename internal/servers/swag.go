@@ -49,7 +49,7 @@ func SwaggerServe(ctx context.Context) error {
 }
 
 func ShutdownSwaggerServe(_ context.Context) error {
-	log.Println("Shutting down Swagger server...")
+	log.Println("Shutting down Swagger Implementation...")
 	return nil
 }
 
