@@ -1,6 +1,6 @@
 PROTO_IN := $(CURDIR)/api
 PROTO_OUT := $(CURDIR)/pkg/api
-VENDOR := $(CURDIR)/.vendor.proto
+VENDOR := $(CURDIR)/.proto_vendor
 
 proto-bin:
 	GOBIN=$(BIN_DIR) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
@@ -25,9 +25,10 @@ proto-vendor:
 			rm -rf $(VENDOR)/protoc-gen-validate ;\
 		fi
 		@if [ ! -d $(VENDOR)/protoc-gen-openapiv2 ]; then \
-			mkdir -p $(VENDOR)/protoc-gen-openapiv2/options && \
-			curl https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/master/protoc-gen-openapiv2/options/annotations.proto > $(VENDOR)/protoc-gen-openapiv2/options/annotations.proto && \
-			curl https://raw.githubusercontent.com/grpc-ecosystem/grpc-gateway/master/protoc-gen-openapiv2/options/openapiv2.proto > $(VENDOR)/protoc-gen-openapiv2/options/openapiv2.proto ;\
+			mkdir -p $(VENDOR)/protoc-gen-openapiv2/options &&\
+			git clone https://github.com/grpc-ecosystem/grpc-gateway $(VENDOR)/openapiv2 &&\
+			mv $(VENDOR)/openapiv2/protoc-gen-openapiv2/options/*.proto $(VENDOR)/protoc-gen-openapiv2/options &&\
+			rm -rf $(VENDOR)/openapiv2 ;\
 		fi
 
 proto:
