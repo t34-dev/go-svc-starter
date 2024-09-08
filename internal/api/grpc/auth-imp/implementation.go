@@ -1,4 +1,4 @@
-package auth
+package auth_imp
 
 import (
 	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"

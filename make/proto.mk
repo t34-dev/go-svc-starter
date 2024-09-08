@@ -89,14 +89,15 @@ proto-access:
 
 proto-merge:
 	@echo "Merging Swagger files in specified order..."
-	# Common should be first and contain a general description
+	@#Common should be first and contain a general description
 	@$(eval SWAGGER_FILES := \
 		$(PROTO_OUT)/common_v1/common.swagger.json \
 		$(PROTO_OUT)/auth_v1/auth.swagger.json \
 		$(PROTO_OUT)/access_v1/access.swagger.json \
 	)
-	@$(BIN_DIR)/swagger$(APP_EXT) mixin $(shell echo $(SWAGGER_FILES)) -o $(PROTO_OUT)/api.swagger.json
-	@echo "Swagger files merged in order"
+	@$(BIN_DIR)/swagger$(APP_EXT) mixin $(shell echo $(SWAGGER_FILES)) -o $(PROTO_OUT)/api.swagger.json || true
+	@if [ ! -f $(PROTO_OUT)/api.swagger.json ]; then echo "Error: Swagger merge failed"; exit 1; fi
+	@echo "Swagger files merged"
 
 proto-ping:
 	$(BIN_DIR)/grpcurl$(APP_EXT) -plaintext \

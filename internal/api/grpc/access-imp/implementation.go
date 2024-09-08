@@ -1,4 +1,4 @@
-package access
+package access_imp
 
 import (
 	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"

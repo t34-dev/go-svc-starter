@@ -1,4 +1,4 @@
-package common
+package common_imp
 
 import "github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 
