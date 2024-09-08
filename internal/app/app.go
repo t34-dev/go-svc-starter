@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/t34-dev/go-svc-starter/internal/api/access"
+	"github.com/t34-dev/go-svc-starter/internal/api/auth"
 	"github.com/t34-dev/go-svc-starter/internal/api/common"
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
+	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"
+	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"google.golang.org/grpc/credentials"
 	"log"
@@ -157,7 +161,9 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 
 	reflection.Register(a.grpcServer)
 
-	common_v1.RegisterCommonV1Server(a.grpcServer, common.NewImplementedRandom())
+	common_v1.RegisterCommonV1Server(a.grpcServer, common.NewImplementedCommon())
+	access_v1.RegisterAccessV1Server(a.grpcServer, access.NewImplementedAccess())
+	auth_v1.RegisterAuthV1Server(a.grpcServer, auth.NewImplementedAuth())
 
 	return nil
 }

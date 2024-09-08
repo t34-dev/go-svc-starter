@@ -10,6 +10,6 @@ type ImplementedAccess struct {
 	access_v1.UnimplementedAccessV1Server
 }
 
-func NewImplementedRandom() *ImplementedAccess {
+func NewImplementedAccess() *ImplementedAccess {
 	return &ImplementedAccess{}
 }

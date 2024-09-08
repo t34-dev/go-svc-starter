@@ -10,6 +10,6 @@ type ImplementedAuth struct {
 	auth_v1.UnimplementedAuthV1Server
 }
 
-func NewImplementedRandom() *ImplementedAuth {
+func NewImplementedAuth() *ImplementedAuth {
 	return &ImplementedAuth{}
 }

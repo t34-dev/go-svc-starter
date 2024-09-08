@@ -8,6 +8,6 @@ type ImplementedCommon struct {
 	common_v1.UnimplementedCommonV1Server
 }
 
-func NewImplementedRandom() *ImplementedCommon {
+func NewImplementedCommon() *ImplementedCommon {
 	return &ImplementedCommon{}
 }
