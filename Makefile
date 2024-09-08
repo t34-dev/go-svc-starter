@@ -39,6 +39,7 @@ server: build-server
 	@.bin/$(NAME_SERVER)${APP_EXT}
 
 build-client:
+	@rm -f .bin/$(NAME_CLIENT)$(APP_EXT)
 	go build -o .bin/$(NAME_CLIENT)$(APP_EXT) cmd/client/*
 client: build-client
 	@.bin/$(NAME_CLIENT)${APP_EXT}

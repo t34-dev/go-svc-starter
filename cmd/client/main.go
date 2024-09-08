@@ -5,6 +5,7 @@ import (
 	"fmt"
 	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"log"
 	"time"
@@ -64,32 +65,11 @@ func main() {
 	ctx := context.Background()
 
 	// Requests
-	timeResp, err := c.GetTime(ctx, &common_v1.EmptyRequest{})
+	timeResp, err := c.GetTime(ctx, &emptypb.Empty{})
 	if err != nil {
 		log.Fatalf("could not get time: %v", err)
 	}
 	fmt.Printf("Current time: %v\n", timeResp.GetTime().AsTime())
-
-	numberResp, err := c.GetRandomNumber(ctx, &common_v1.EmptyRequest{})
-	if err != nil {
-		log.Fatalf("could not get random number: %v", err)
-	}
-	fmt.Printf("Common number: %d\n", numberResp.GetNumber())
-
-	quoteResp, err := c.GetRandomQuote(ctx, &common_v1.EmptyRequest{})
-	if err != nil {
-		log.Fatalf("could not get random quote: %v", err)
-	}
-	fmt.Printf("Common quote: %s\n", quoteResp.GetQuote())
-
-	txt := "test text"
-	number, err := c.GetLen(ctx, &common_v1.TxtRequest{
-		Text: txt,
-	})
-	if err != nil {
-		log.Fatalf("could not get GetLen: %v", err)
-	}
-	fmt.Printf("GetLen [%s] - %d\n", txt, number.GetNumber())
 
 	stream, err := c.LongOperation(ctx, &common_v1.LongOperationRequest{})
 	if err != nil {
