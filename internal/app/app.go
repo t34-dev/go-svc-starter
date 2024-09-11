@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/fatih/color"
 	access_imp "github.com/t34-dev/go-svc-starter/internal/api/grpc/access-imp"
 	auth_imp "github.com/t34-dev/go-svc-starter/internal/api/grpc/auth-imp"
 	common_imp "github.com/t34-dev/go-svc-starter/internal/api/grpc/common-imp"
@@ -243,7 +244,8 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 }
 
 func (a *App) runGRPCServer(ctx context.Context) error {
-	fmt.Printf("%-10s http://%s/\n", "gRPC:", a.serviceProvider.GRPCConfig().Address())
+	blue := color.New(color.FgYellow).SprintFunc()
+	fmt.Printf("%-20s %s\n", blue("gRPC:"), "http://"+a.serviceProvider.GRPCConfig().Address()+"/")
 
 	list, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
 	if err != nil {
@@ -262,7 +264,8 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) runHTTPServer(ctx context.Context) error {
-	fmt.Printf("%-10s http://%s/swagger/\n", "Swagger:", a.serviceProvider.HTTPConfig().Address())
+	blue := color.New(color.FgYellow).SprintFunc()
+	fmt.Printf("%-20s %s\n", blue("Swagger:"), "http://"+a.serviceProvider.HTTPConfig().Address()+"/swagger/")
 
 	go func() {
 		<-ctx.Done()

@@ -11,6 +11,8 @@ const (
 	httpPortEnvName = "HTTP_PORT"
 )
 
+var _ HTTPConfig = &httpConfig{}
+
 type HTTPConfig interface {
 	Address() string
 }
