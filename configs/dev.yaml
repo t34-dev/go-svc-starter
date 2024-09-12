@@ -1,0 +1,17 @@
+app:
+    is_production: false
+    name: "SS0"
+    log_level: "info"                    # debug, info, warn, error, panic, fatal
+
+grpc:
+    host: localhost
+    port: 50051
+
+http:
+    host: localhost
+    port: 8080
+
+db:
+    ssl_mode: "disable"
+    min_conn: 5
+    max_conn: 20

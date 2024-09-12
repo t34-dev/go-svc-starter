@@ -1,54 +1,45 @@
 package app
 
-import (
-	"github.com/t34-dev/go-svc-starter/internal/config"
-	"log"
-)
+import "github.com/t34-dev/go-svc-starter/internal/config"
 
 type serviceProvider struct {
-	pgConfig   config.PGConfig
-	grpcConfig config.GRPCConfig
-	httpConfig config.HTTPConfig
+	appConfig  config.AppConfig
+	grpcConfig config.GrpcConfig
+	httpConfig config.HttpConfig
+	pgConfig   config.PgConfig
 }
 
 func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
-func (s *serviceProvider) PGConfig() config.PGConfig {
-	if s.pgConfig == nil {
-		cfg, err := config.NewPGConfig()
-		if err != nil {
-			log.Fatalf("failed to get pg config: %s", err.Error())
-		}
+func (s *serviceProvider) APPConfig() config.AppConfig {
+	if s.appConfig == nil {
+		s.appConfig = config.App()
+	}
 
-		s.pgConfig = cfg
+	return s.appConfig
+}
+
+func (s *serviceProvider) PGConfig() config.PgConfig {
+	if s.pgConfig == nil {
+		s.pgConfig = config.Pg()
 	}
 
 	return s.pgConfig
 }
 
-func (s *serviceProvider) GRPCConfig() config.GRPCConfig {
+func (s *serviceProvider) GRPCConfig() config.GrpcConfig {
 	if s.grpcConfig == nil {
-		cfg, err := config.NewGRPCConfig()
-		if err != nil {
-			log.Fatalf("failed to get grpc config: %s", err.Error())
-		}
-
-		s.grpcConfig = cfg
+		s.grpcConfig = config.Grpc()
 	}
 
 	return s.grpcConfig
 }
 
-func (s *serviceProvider) HTTPConfig() config.HTTPConfig {
+func (s *serviceProvider) HTTPConfig() config.HttpConfig {
 	if s.httpConfig == nil {
-		cfg, err := config.NewHTTPConfig()
-		if err != nil {
-			log.Fatalf("failed to get http config: %s", err.Error())
-		}
-
-		s.httpConfig = cfg
+		s.httpConfig = config.Http()
 	}
 
 	return s.httpConfig

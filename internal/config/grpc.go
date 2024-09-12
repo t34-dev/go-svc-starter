@@ -1,42 +1,26 @@
 package config
 
-import (
-	"errors"
-	"net"
-	"os"
-)
+import "net"
 
-const (
-	grpcHostEnvName = "GRPC_HOST"
-	grpcPortEnvName = "GRPC_PORT"
-)
+var _ GrpcConfig = &grpcConfig{}
 
-type GRPCConfig interface {
+type GrpcConfig interface {
+	Host() string
+	Port() string
 	Address() string
 }
-
 type grpcConfig struct {
-	host string
-	port string
+	HostVal string `yaml:"host" env:"GRPC_HOST" yaml-default:"localhost"`
+	PortVal string `yaml:"port" env:"GRPC_PORT" yaml-default:"50051"`
 }
 
-func NewGRPCConfig() (GRPCConfig, error) {
-	host := os.Getenv(grpcHostEnvName)
-	if len(host) == 0 {
-		return nil, errors.New("grpc host not found")
-	}
-
-	port := os.Getenv(grpcPortEnvName)
-	if len(port) == 0 {
-		return nil, errors.New("grpc port not found")
-	}
-
-	return &grpcConfig{
-		host: host,
-		port: port,
-	}, nil
+func (a *grpcConfig) Host() string {
+	return a.HostVal
 }
 
-func (cfg *grpcConfig) Address() string {
-	return net.JoinHostPort(cfg.host, cfg.port)
+func (a *grpcConfig) Port() string {
+	return a.PortVal
+}
+func (a *grpcConfig) Address() string {
+	return net.JoinHostPort(a.HostVal, a.PortVal)
 }

@@ -129,11 +129,27 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
-func (a *App) initConfig(_ context.Context) error {
-	err := config.Load(".env")
+func (a *App) initConfig(ctx context.Context) error {
+	err, resultChan := config.New(ctx, "configs/dev.yaml", ".env")
 	if err != nil {
 		return err
 	}
+
+	ticker := time.NewTicker(1 * time.Second)
+	go func() {
+		for {
+			select {
+			case result := <-resultChan:
+				if result.Error != nil {
+					fmt.Println("Ошибка из Watch:", result.Error)
+				} else {
+					fmt.Printf("Успешно обновили, APP: %+v \n", config.App())
+				}
+			case <-ticker.C:
+				fmt.Println("FROM:", config.App().Name(), config.Grpc().Port(), config.App().LogLevel())
+			}
+		}
+	}()
 
 	return nil
 }
