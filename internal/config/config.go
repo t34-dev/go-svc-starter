@@ -25,6 +25,9 @@ type config struct {
 func App() AppConfig {
 	return &cfg.App
 }
+func GetAllConfig() *config {
+	return cfg
+}
 
 func Grpc() GrpcConfig {
 	return &cfg.Grpc

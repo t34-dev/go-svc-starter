@@ -10,6 +10,7 @@ import (
 	common_imp "github.com/t34-dev/go-svc-starter/internal/api/grpc/common-imp"
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
+	"github.com/t34-dev/go-svc-starter/internal/logger"
 	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
@@ -114,6 +115,7 @@ func (a *App) Run(ctxMain context.Context) error {
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
+		a.initLogger,
 		a.initServiceProvider,
 		a.initGRPCServer,
 		a.initHTTPServer,
@@ -144,16 +146,27 @@ func (a *App) initConfig(ctx context.Context) error {
 				return
 			case result := <-resultChan:
 				if result.Error != nil {
-					fmt.Println("Ошибка из Watch:", result.Error)
+					logger.Error(fmt.Sprintf("error from Watch: %s", result.Error))
 				} else {
-					fmt.Printf("Успешно обновили, APP: %+v \n", config.App())
+					err = logger.SetLogLevel(config.App().LogLevel())
+					if err != nil {
+						logger.Error(fmt.Sprintf("error from SetLogLevel: %s", err))
+					}
+					logger.Warn(fmt.Sprintf("config is updated: %+v", config.GetAllConfig()))
 				}
 			case <-ticker.C:
-				fmt.Println("FROM:", config.App().Name(), config.Grpc().Port(), config.App().LogLevel())
+				logger.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().Name(), config.Grpc().Port(), config.App().LogLevel()))
 			}
 		}
 	}()
+	return nil
+}
 
+func (a *App) initLogger(_ context.Context) error {
+	if err := logger.SetLogLevel(config.App().LogLevel()); err != nil {
+		return err
+	}
+	logger.Init(logger.GetCore(logger.GetAtomicLevel()))
 	return nil
 }
 

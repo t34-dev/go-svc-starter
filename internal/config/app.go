@@ -1,20 +1,16 @@
 package config
 
-import (
-	"go.uber.org/zap/zapcore"
-)
-
 var _ AppConfig = &appConfig{}
 
 type AppConfig interface {
 	IsProduction() bool
 	Name() string
-	LogLevel() zapcore.Level
+	LogLevel() string
 }
 type appConfig struct {
-	IsProductionVal bool          `yaml:"is_production" env:"IS_PRODUCTION" yaml-default:"true"`
-	NameVal         string        `yaml:"name" env-default:"ms-sso"`
-	LogLevelVal     zapcore.Level `yaml:"log_level" env-default:"info"`
+	IsProductionVal bool   `yaml:"is_production" env:"IS_PRODUCTION" yaml-default:"true"`
+	NameVal         string `yaml:"name" env-default:"ms-sso"`
+	LogLevelVal     string `yaml:"log_level" env-default:"info"`
 }
 
 func (a *appConfig) IsProduction() bool {
@@ -25,6 +21,6 @@ func (a *appConfig) Name() string {
 	return a.NameVal
 }
 
-func (a *appConfig) LogLevel() zapcore.Level {
+func (a *appConfig) LogLevel() string {
 	return a.LogLevelVal
 }
