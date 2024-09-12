@@ -139,6 +139,9 @@ func (a *App) initConfig(ctx context.Context) error {
 	go func() {
 		for {
 			select {
+			case <-ctx.Done():
+				ticker.Stop()
+				return
 			case result := <-resultChan:
 				if result.Error != nil {
 					fmt.Println("Ошибка из Watch:", result.Error)

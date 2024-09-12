@@ -1,6 +1,8 @@
 package app
 
-import "github.com/t34-dev/go-svc-starter/internal/config"
+import (
+	"github.com/t34-dev/go-svc-starter/internal/config"
+)
 
 type serviceProvider struct {
 	appConfig  config.AppConfig
