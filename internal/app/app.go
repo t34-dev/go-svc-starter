@@ -203,7 +203,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 
-	err = common_v1.RegisterCommonV1HandlerFromEndpoint(ctx, grpcGatewayMux, a.serviceProvider.GRPCConfig().Address(), opts)
+	err = common_v1.RegisterCommonV1HandlerFromEndpoint(ctx, grpcGatewayMux, config.Grpc().Address(), opts)
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	})
 
 	a.httpServer = &http.Server{
-		Addr:    a.serviceProvider.HTTPConfig().Address(),
+		Addr:    config.Http().Address(),
 		Handler: combinedHandler,
 	}
 
@@ -264,9 +264,9 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 
 func (a *App) runGRPCServer(ctx context.Context) error {
 	blue := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("%-20s %s\n", blue("gRPC:"), "http://"+a.serviceProvider.GRPCConfig().Address()+"/")
+	fmt.Printf("%-20s %s\n", blue("gRPC:"), "http://"+config.Grpc().Address()+"/")
 
-	list, err := net.Listen("tcp", a.serviceProvider.GRPCConfig().Address())
+	list, err := net.Listen("tcp", config.Grpc().Address())
 	if err != nil {
 		return err
 	}
@@ -284,7 +284,7 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 
 func (a *App) runHTTPServer(ctx context.Context) error {
 	blue := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("%-20s %s\n", blue("Swagger:"), "http://"+a.serviceProvider.HTTPConfig().Address()+"/swagger/")
+	fmt.Printf("%-20s %s\n", blue("Swagger:"), "http://"+config.Http().Address()+"/swagger/")
 
 	go func() {
 		<-ctx.Done()

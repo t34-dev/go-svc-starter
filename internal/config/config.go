@@ -6,16 +6,16 @@ import (
 	"github.com/t34-dev/go-svc-starter/pkg/iconfig"
 )
 
-var cfg *configX
+var cfg *config
 
 type result struct {
-	newConfig *configX
+	newConfig *config
 	Error     error
 }
 
 var resultChan = make(chan result, 1)
 
-type configX struct {
+type config struct {
 	App  appConfig  `yaml:"app"`
 	Grpc grpcConfig `yaml:"grpc"`
 	Http httpConfig `yaml:"http"`
@@ -43,7 +43,7 @@ func New(ctx context.Context, yamlPath, envPath string) (error, <-chan result) {
 	}
 	if nil == cfg {
 		defer func() {
-			err := watchConfig(ctx, yamlPath, envPath, func(newConfig *configX, err error) {
+			err := watchConfig(ctx, yamlPath, envPath, func(newConfig *config, err error) {
 				resultChan <- result{newConfig: newConfig, Error: err}
 			})
 			if err != nil {
@@ -52,7 +52,7 @@ func New(ctx context.Context, yamlPath, envPath string) (error, <-chan result) {
 		}()
 	}
 
-	initialConfig := new(configX)
+	initialConfig := new(config)
 	err := iconfig.GetConfig(initialConfig, yamlPath, envPath)
 	if err != nil {
 		return err, resultChan
@@ -62,14 +62,14 @@ func New(ctx context.Context, yamlPath, envPath string) (error, <-chan result) {
 	return nil, resultChan
 }
 
-func watchConfig(ctx context.Context, yamlPath string, envPath string, callBack func(newConfig *configX, err error)) error {
+func watchConfig(ctx context.Context, yamlPath string, envPath string, callBack func(newConfig *config, err error)) error {
 	return iconfig.WatchConfig(ctx, yamlPath, func(msg string, err error) {
 		if err != nil {
 			callBack(nil, err)
 		} else {
 			oldConfig := cfg
 
-			newConfig := new(configX)
+			newConfig := new(config)
 			err := iconfig.GetConfig(newConfig, yamlPath, envPath)
 			if err != nil {
 				callBack(nil, err)
@@ -82,7 +82,7 @@ func watchConfig(ctx context.Context, yamlPath string, envPath string, callBack 
 		}
 	})
 }
-func isChangedConfig(oldConfig, newConfig *configX) bool {
+func isChangedConfig(oldConfig, newConfig *config) bool {
 	if oldConfig == nil || newConfig == nil {
 		return true
 	}
