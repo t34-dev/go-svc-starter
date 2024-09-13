@@ -1,4 +1,4 @@
-package auth_imp
+package auth
 
 import (
 	"context"
@@ -6,10 +6,5 @@ import (
 )
 
 func (s *ImplementedAuth) Logout(ctx context.Context, in *emptypb.Empty) (*emptypb.Empty, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		return &emptypb.Empty{}, nil
-	}
+	return &emptypb.Empty{}, nil
 }

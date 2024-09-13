@@ -1,4 +1,4 @@
-package access_imp
+package access
 
 import (
 	"context"
@@ -8,11 +8,6 @@ import (
 )
 
 func (s *ImplementedAccess) Check(ctx context.Context, in *access_v1.CheckRequest) (*emptypb.Empty, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		fmt.Println("Endpoin:", in.GetEndpointAddress())
-		return &emptypb.Empty{}, nil
-	}
+	fmt.Println("Endpoin:", in.GetEndpointAddress())
+	return &emptypb.Empty{}, nil
 }

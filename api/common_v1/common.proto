@@ -49,6 +49,15 @@ service CommonV1 {
 			description: "Returns the current server time"
 		};
 	}
+	rpc GetDBTime(google.protobuf.Empty) returns (TimeResponse) {
+		option (google.api.http) = {
+			get: "/api/CommonV1/GetDBTime"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Get current DB time"
+			description: "Returns the current DB time"
+		};
+	}
 	rpc LongOperation(LongOperationRequest) returns (stream LongOperationResponse) {
 		option (google.api.http) = {
 			post: "/api/CommonV1/LongOperation"

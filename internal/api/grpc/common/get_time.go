@@ -1,4 +1,4 @@
-package common_imp
+package common
 
 import (
 	"context"
@@ -8,10 +8,5 @@ import (
 )
 
 func (s *ImplementedCommon) GetTime(ctx context.Context, _ *emptypb.Empty) (*common_v1.TimeResponse, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		return &common_v1.TimeResponse{Time: timestamppb.Now()}, nil
-	}
+	return &common_v1.TimeResponse{Time: timestamppb.Now()}, nil
 }

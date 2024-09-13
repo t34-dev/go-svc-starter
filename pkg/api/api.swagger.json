@@ -144,6 +144,30 @@
         }
       }
     },
+    "/api/CommonV1/GetDBTime": {
+      "get": {
+        "description": "Returns the current DB time",
+        "tags": [
+          "CommonV1"
+        ],
+        "summary": "Get current DB time",
+        "operationId": "CommonV1_GetDBTime",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/common_v1TimeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        }
+      }
+    },
     "/api/CommonV1/GetTime": {
       "get": {
         "description": "Returns the current server time",

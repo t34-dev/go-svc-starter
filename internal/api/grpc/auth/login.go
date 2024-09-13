@@ -1,4 +1,4 @@
-package auth_imp
+package auth
 
 import (
 	"context"

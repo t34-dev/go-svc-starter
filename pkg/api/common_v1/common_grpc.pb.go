@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CommonV1Client interface {
 	GetTime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TimeResponse, error)
+	GetDBTime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TimeResponse, error)
 	LongOperation(ctx context.Context, in *LongOperationRequest, opts ...grpc.CallOption) (CommonV1_LongOperationClient, error)
 }
 
@@ -38,6 +39,15 @@ func NewCommonV1Client(cc grpc.ClientConnInterface) CommonV1Client {
 func (c *commonV1Client) GetTime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TimeResponse, error) {
 	out := new(TimeResponse)
 	err := c.cc.Invoke(ctx, "/common_v1.CommonV1/GetTime", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *commonV1Client) GetDBTime(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TimeResponse, error) {
+	out := new(TimeResponse)
+	err := c.cc.Invoke(ctx, "/common_v1.CommonV1/GetDBTime", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -81,6 +91,7 @@ func (x *commonV1LongOperationClient) Recv() (*LongOperationResponse, error) {
 // for forward compatibility
 type CommonV1Server interface {
 	GetTime(context.Context, *emptypb.Empty) (*TimeResponse, error)
+	GetDBTime(context.Context, *emptypb.Empty) (*TimeResponse, error)
 	LongOperation(*LongOperationRequest, CommonV1_LongOperationServer) error
 	mustEmbedUnimplementedCommonV1Server()
 }
@@ -91,6 +102,9 @@ type UnimplementedCommonV1Server struct {
 
 func (UnimplementedCommonV1Server) GetTime(context.Context, *emptypb.Empty) (*TimeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetTime not implemented")
+}
+func (UnimplementedCommonV1Server) GetDBTime(context.Context, *emptypb.Empty) (*TimeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDBTime not implemented")
 }
 func (UnimplementedCommonV1Server) LongOperation(*LongOperationRequest, CommonV1_LongOperationServer) error {
 	return status.Errorf(codes.Unimplemented, "method LongOperation not implemented")
@@ -126,6 +140,24 @@ func _CommonV1_GetTime_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommonV1_GetDBTime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommonV1Server).GetDBTime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/common_v1.CommonV1/GetDBTime",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommonV1Server).GetDBTime(ctx, req.(*emptypb.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CommonV1_LongOperation_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(LongOperationRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -157,6 +189,10 @@ var CommonV1_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTime",
 			Handler:    _CommonV1_GetTime_Handler,
+		},
+		{
+			MethodName: "GetDBTime",
+			Handler:    _CommonV1_GetDBTime_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

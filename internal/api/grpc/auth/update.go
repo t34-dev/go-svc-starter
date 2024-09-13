@@ -1,4 +1,4 @@
-package auth_imp
+package auth
 
 import (
 	"context"
@@ -6,13 +6,8 @@ import (
 )
 
 func (s *ImplementedAuth) UpdateToken(ctx context.Context, in *auth_v1.UpdateTokenRequest) (*auth_v1.UpdateTokenResponse, error) {
-	select {
-	case <-ctx.Done():
-		return nil, ctx.Err()
-	default:
-		return &auth_v1.UpdateTokenResponse{
-			AccessToken:  "AccessToken",
-			RefreshToken: "RefreshToken",
-		}, nil
-	}
+	return &auth_v1.UpdateTokenResponse{
+		AccessToken:  "AccessToken",
+		RefreshToken: "RefreshToken",
+	}, nil
 }
