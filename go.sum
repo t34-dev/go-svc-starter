@@ -49,6 +49,10 @@ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKs
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/t34-dev/go-grpc-pool v1.0.4 h1:wg/dnd9j0S6WGtzXEnCvUKA58PHG0OBBxcMCrUTE5ZE=
 github.com/t34-dev/go-grpc-pool v1.0.4/go.mod h1:4Qdb9W1jqV1WgRgKdZz7mG6Z2NfOfL1jxAAfYemu9rY=
+github.com/t34-dev/go-utils v0.0.1 h1:ejit7+a7eUP5daWLLyG7hY2Ze5/SSyuW6zVF3VmDhjo=
+github.com/t34-dev/go-utils v0.0.1/go.mod h1:gzmszKaCakvt2zc5IjXVQpbrvJpkpdVVmphOqmnD5Fs=
+github.com/t34-dev/go-utils v0.0.2 h1:KpsjvHwb4E/idAW1S++A07zjFTH5ljo4WK8yd4Y4tik=
+github.com/t34-dev/go-utils v0.0.2/go.mod h1:gzmszKaCakvt2zc5IjXVQpbrvJpkpdVVmphOqmnD5Fs=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
 go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
 go.uber.org/multierr v1.10.0 h1:S0h4aNzvfcFsC3dRF1jLoaov7oRaKqRGC/pUEJ2yvPQ=

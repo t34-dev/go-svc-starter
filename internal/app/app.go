@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/fatih/color"
@@ -14,6 +15,8 @@ import (
 	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
+	"github.com/t34-dev/go-utils/pkg/logs"
+	"go.uber.org/zap"
 	"google.golang.org/grpc/credentials"
 	"log"
 	"net"
@@ -146,16 +149,22 @@ func (a *App) initConfig(ctx context.Context) error {
 				return
 			case result := <-resultChan:
 				if result.Error != nil {
-					logger.Error(fmt.Sprintf("error from Watch: %s", result.Error))
+					logs.Error(fmt.Sprintf("error from Watch: %s", result.Error))
 				} else {
 					err = logger.SetLogLevel(config.App().LogLevel())
 					if err != nil {
-						logger.Error(fmt.Sprintf("error from SetLogLevel: %s", err))
+						logs.Error(fmt.Sprintf("error from SetLogLevel: %s", err))
+					} else {
+						marshal, _ := json.Marshal(config.GetAllConfig())
+						if err != nil {
+							logs.Error(fmt.Sprintf("config marshal error: %s", err))
+						} else {
+							logs.Warn(fmt.Sprintf("config is updated"), zap.String("newConfig", string(marshal)))
+						}
 					}
-					logger.Warn(fmt.Sprintf("config is updated: %+v", config.GetAllConfig()))
 				}
 			case <-ticker.C:
-				logger.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().Name(), config.Grpc().Port(), config.App().LogLevel()))
+				logs.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().Name(), config.Grpc().Port(), config.App().LogLevel()))
 			}
 		}
 	}()
@@ -166,7 +175,7 @@ func (a *App) initLogger(_ context.Context) error {
 	if err := logger.SetLogLevel(config.App().LogLevel()); err != nil {
 		return err
 	}
-	logger.Init(logger.GetCore(logger.GetAtomicLevel()))
+	logs.Init(logger.GetCore(logger.GetAtomicLevel()))
 	return nil
 }
 
