@@ -191,7 +191,8 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
-				interceptor.ValidateInterceptor,
+				interceptor.GrpcValidateInterceptor,
+				interceptor.ErrorCodesInterceptor,
 			),
 		),
 	}
