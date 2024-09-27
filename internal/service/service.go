@@ -6,27 +6,31 @@ import (
 	"time"
 )
 
-type Options struct {
-	Repos *repository.Repository
-}
-type Service struct {
-	Origin Options
-	Common CommonService
+type Dependencies struct {
+	Service Service
+	Repos   repository.Repository
 }
 
-//func New(repos Options) *Service {
-//	srv := &Service{
-//		Origin: repos,
-//	}
-//	srv.Common = common.New(srv)
-//	return srv
-//}
+func NewDeps(service Service, repos repository.Repository) Dependencies {
+	return Dependencies{
+		Service: service,
+		Repos:   repos,
+	}
+}
+
+type Service struct {
+	Common CommonService
+	Access AccessService
+	Auth   AuthService
+}
 
 type CommonService interface {
 	GetDBTime(ctx context.Context) (time.Time, error)
 	GetTime(ctx context.Context) (time.Time, error)
 }
-type authInterface interface {
-	// Login войти в систему
-	Login(ctx context.Context, email, login, fingerPrint string, userAgent string) (string, error)
+type AccessService interface {
+	Check(ctx context.Context, path string) (bool, error)
+}
+type AuthService interface {
+	Check(ctx context.Context, path string) (bool, error)
 }

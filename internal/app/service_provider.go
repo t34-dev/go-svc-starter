@@ -12,6 +12,8 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	pgRepos "github.com/t34-dev/go-svc-starter/internal/repository/pg"
 	"github.com/t34-dev/go-svc-starter/internal/service"
+	accessSrv "github.com/t34-dev/go-svc-starter/internal/service/access"
+	authSrv "github.com/t34-dev/go-svc-starter/internal/service/auth"
 	commonSrv "github.com/t34-dev/go-svc-starter/internal/service/common"
 	"github.com/t34-dev/go-utils/pkg/closer"
 	"github.com/t34-dev/go-utils/pkg/logs"
@@ -32,7 +34,7 @@ func newServiceProvider() *serviceProvider {
 
 func (s *serviceProvider) DB(ctx context.Context) *pgxpool.Pool {
 	if s.db == nil {
-		// Строка подключения к базе данных
+		// Database connection string
 		databaseUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 			config.Pg().User(),
 			config.Pg().Password(),
@@ -42,35 +44,36 @@ func (s *serviceProvider) DB(ctx context.Context) *pgxpool.Pool {
 			config.Pg().SSLMode(),
 		)
 
-		// Создаем конфигурацию для пула соединений
+		// Create configuration for the connection pool
 		dbConfig, err := pgxpool.ParseConfig(databaseUrl)
 		if err != nil {
-			logs.Fatal(fmt.Sprintf("Ошибка парсинга конфигурации: %v\n", err))
+			logs.Fatal(fmt.Sprintf("Error parsing configuration: %v\n", err))
 		}
 
-		// Настраиваем параметры пула
+		// Configure pool parameters
 		dbConfig.MinConns = config.Pg().MinConns()
 		dbConfig.MaxConns = config.Pg().MaxConns()
 
-		// Создаем пул соединений
+		// Create connection pool
 		pool, err := pgxpool.ConnectConfig(ctx, dbConfig)
 		if err != nil {
-			logs.Fatal(fmt.Sprintf("Не удалось подключиться к базе данных: %v\n", err))
+			logs.Fatal(fmt.Sprintf("Failed to connect to database: %v\n", err))
 		}
 		closer.Add(func() error {
 			pool.Close()
 			return nil
 		})
 
-		// Проверяем подключение
+		// Check connection
 		if err := pool.Ping(ctx); err != nil {
-			logs.Fatal(fmt.Sprintf("Не удалось выполнить пинг базы данных: %v\n", err))
+			logs.Fatal(fmt.Sprintf("Failed to ping database: %v\n", err))
 		}
-		logs.Debug("Успешно подключено к базе данных")
+		logs.Debug("Successfully connected to database")
 		s.db = pool
 	}
 	return s.db
 }
+
 func (s *serviceProvider) Repos(ctx context.Context) *repository.Repository {
 	if s.repos == nil {
 		s.repos = pgRepos.New(s.DB(ctx))
@@ -92,13 +95,12 @@ func (s *serviceProvider) GrpcImpl(ctx context.Context) *grpcImpl.GrpcImpl {
 
 func (s *serviceProvider) Service(ctx context.Context) *service.Service {
 	if s.service == nil {
-		srv := &service.Service{
-			Origin: service.Options{
-				Repos: s.Repos(ctx),
-			},
-		}
-		srv.Common = commonSrv.New(srv)
-		s.service = srv
+		srv := service.Service{}
+		deps := service.NewDeps(srv, *s.Repos(ctx))
+		srv.Common = commonSrv.New(deps)
+		srv.Auth = authSrv.New(deps)
+		srv.Access = accessSrv.New(deps)
+		s.service = &srv
 	}
 
 	return s.service

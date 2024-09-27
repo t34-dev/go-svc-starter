@@ -1,4 +1,4 @@
-package common_srv
+package common_service
 
 import (
 	"context"
@@ -9,19 +9,19 @@ import (
 var _ service.CommonService = &commonService{}
 
 type commonService struct {
-	origin *service.Service
+	opt service.Dependencies
 }
 
-func New(service *service.Service) service.CommonService {
+func New(opt service.Dependencies) service.CommonService {
 	return &commonService{
-		origin: service,
+		opt: opt,
 	}
 }
 
 func (s *commonService) GetDBTime(ctx context.Context) (time.Time, error) {
-	return time.Now(), nil
+	return s.opt.Repos.Common.GetTime(ctx)
 }
 
-func (s *commonService) GetTime(ctx context.Context) (time.Time, error) {
+func (s *commonService) GetTime(_ context.Context) (time.Time, error) {
 	return time.Now(), nil
 }
