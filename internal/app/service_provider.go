@@ -12,9 +12,9 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	pgRepos "github.com/t34-dev/go-svc-starter/internal/repository/pg"
 	"github.com/t34-dev/go-svc-starter/internal/service"
-	accessSrv "github.com/t34-dev/go-svc-starter/internal/service/access"
-	authSrv "github.com/t34-dev/go-svc-starter/internal/service/auth"
-	commonSrv "github.com/t34-dev/go-svc-starter/internal/service/common"
+	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
+	authService "github.com/t34-dev/go-svc-starter/internal/service/auth"
+	commonService "github.com/t34-dev/go-svc-starter/internal/service/common"
 	"github.com/t34-dev/go-utils/pkg/closer"
 	"github.com/t34-dev/go-utils/pkg/logs"
 )
@@ -97,9 +97,9 @@ func (s *serviceProvider) Service(ctx context.Context) *service.Service {
 	if s.service == nil {
 		srv := service.Service{}
 		deps := service.NewDeps(srv, *s.Repos(ctx))
-		srv.Common = commonSrv.New(deps)
-		srv.Auth = authSrv.New(deps)
-		srv.Access = accessSrv.New(deps)
+		srv.Common = commonService.New(deps)
+		srv.Auth = authService.New(deps)
+		srv.Access = accessService.New(deps)
 		s.service = &srv
 	}
 
