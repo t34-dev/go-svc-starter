@@ -2,21 +2,21 @@ package common_repository
 
 import (
 	"context"
+	"github.com/t34-dev/go-utils/pkg/db"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 )
 
 var _ repository.CommonRepository = (*repo)(nil)
 
 type repo struct {
-	db      *pgxpool.Pool
+	db      db.Client
 	builder sq.StatementBuilderType
 }
 
-func New(db *pgxpool.Pool) repository.CommonRepository {
+func New(db db.Client) repository.CommonRepository {
 	return &repo{
 		db:      db,
 		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
@@ -34,7 +34,12 @@ func (r repo) GetTime(ctx context.Context) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	err = r.db.QueryRow(ctx, query, args...).Scan(&dbTime)
+	q := db.Query{
+		Name:     "common_repository.GetTime",
+		QueryRaw: query,
+	}
+
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&dbTime)
 	if err != nil {
 		return time.Time{}, err
 	}

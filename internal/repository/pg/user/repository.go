@@ -2,9 +2,10 @@ package user_repository
 
 import (
 	"context"
-	"github.com/jackc/pgx/v4/pgxpool"
+	sq "github.com/Masterminds/squirrel"
 	"github.com/t34-dev/go-svc-starter/internal/model"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
+	"github.com/t34-dev/go-utils/pkg/db"
 )
 
 const (
@@ -20,11 +21,15 @@ const (
 var _ repository.UserRepository = (*repo)(nil)
 
 type repo struct {
-	db *pgxpool.Pool
+	db      db.Client
+	builder sq.StatementBuilderType
 }
 
-func New(db *pgxpool.Pool) repository.UserRepository {
-	return &repo{db: db}
+func New(db db.Client) repository.UserRepository {
+	return &repo{
+		db:      db,
+		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
+	}
 }
 
 func (r repo) GetAll(ctx context.Context, showIsBlock bool) ([]model.User, error) {
