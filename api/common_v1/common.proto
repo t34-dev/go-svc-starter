@@ -40,7 +40,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 
 // CommonV1 provides various methods for obtaining random data and performing operations
 service CommonV1 {
-	rpc GetTime(google.protobuf.Empty) returns (TimeResponse) {
+	rpc GetTime(TimeRequest) returns (TimeResponse) {
 		option (google.api.http) = {
 			get: "/api/CommonV1/GetTime"
 		};
@@ -70,6 +70,12 @@ service CommonV1 {
 	}
 }
 
+message TimeRequest {
+	bool error = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Error flag"
+		example: "false"
+	}];
+}
 message TimeResponse {
 	google.protobuf.Timestamp time = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
 		description: "Current time"

@@ -176,6 +176,14 @@
         ],
         "summary": "Get current time",
         "operationId": "CommonV1_GetTime",
+        "parameters": [
+          {
+            "type": "boolean",
+            "description": "Error flag",
+            "name": "error",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "A successful response.",

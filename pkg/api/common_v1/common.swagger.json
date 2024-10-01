@@ -64,6 +64,15 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "error",
+            "description": "Error flag",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
         "tags": [
           "CommonV1"
         ]

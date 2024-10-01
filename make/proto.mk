@@ -121,14 +121,14 @@ grpc-load-test:
         --insecure \
         localhost:50051
 
-grpc-error-load-test:
+grpc-load-error-test:
 	$(BIN_DIR)/ghz$(APP_EXT) \
         --proto $(PROTO_IN)/common_v1/common.proto \
 		-i $(VENDOR) \
         --call common_v1.CommonV1.GetTime \
-        --data '{}' \
-		--rps 100 \
-		--total 3000 \
+        --data '{"error": true}' \
+		--rps 50 \
+		--total 2000 \
 		--insecure \
 		localhost:50051
 
