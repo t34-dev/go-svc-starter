@@ -19,8 +19,10 @@ func GetConfig(cfg interface{}, yamlPath, envPath string) error {
 	if err := checkData(yamlPath, envPath); err != nil {
 		return err
 	}
-	if err := ValidateYAML(yamlPath); err != nil {
-		return err
+	if yamlPath != "" {
+		if err := ValidateYAML(yamlPath); err != nil {
+			return err
+		}
 	}
 
 	// Initial configuration load
