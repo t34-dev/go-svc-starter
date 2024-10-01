@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"github.com/fatih/color"
 	grpcMiddleware "github.com/grpc-ecosystem/go-grpc-middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
 	"github.com/t34-dev/go-svc-starter/internal/logger"
+	"github.com/t34-dev/go-svc-starter/internal/metric"
 	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
@@ -32,12 +34,11 @@ import (
 	"google.golang.org/grpc/reflection"
 )
 
-const isTSL = false
-
 type App struct {
-	serviceProvider *serviceProvider
-	grpcServer      *grpc.Server
-	httpServer      *http.Server
+	serviceProvider  *serviceProvider
+	grpcServer       *grpc.Server
+	httpServer       *http.Server
+	prometheusServer *http.Server
 }
 
 func NewApp(ctx context.Context) (*App, error) {
@@ -72,6 +73,7 @@ func (a *App) Run(ctxMain context.Context) error {
 	}{
 		{"gRPC", a.runGRPCServer},
 		{"HTTP", a.runHTTPServer},
+		{"Prometheus", a.runPrometheus},
 	}
 
 	// Start all servers
@@ -116,9 +118,11 @@ func (a *App) Run(ctxMain context.Context) error {
 func (a *App) initDeps(ctx context.Context) error {
 	inits := []func(context.Context) error{
 		a.initConfig,
+		a.checkConfig,
 		a.initLogger,
 		a.initServiceProvider,
 		a.initGRPCServer,
+		a.initPrometheus,
 		a.initHTTPServer,
 	}
 
@@ -132,6 +136,18 @@ func (a *App) initDeps(ctx context.Context) error {
 	return nil
 }
 
+func (a *App) checkConfig(_ context.Context) error {
+	if config.Grpc().Host() == "" || config.Grpc().Port() == "" {
+		return errors.New("Grpc Address is not set, current Address: " + config.Grpc().Address())
+	}
+	if config.Prometheus().Host() == "" || config.Prometheus().Port() == "" {
+		return errors.New("Prometheus Address is not set, current Address: " + config.Prometheus().Address())
+	}
+	if config.Http().Host() == "" || config.Http().Port() == "" {
+		return errors.New("Grpc Http is not set, current Address: " + config.Http().Address())
+	}
+	return nil
+}
 func (a *App) initConfig(ctx context.Context) error {
 	err, resultChan := config.New(ctx, "configs/dev.yaml", ".env")
 	if err != nil {
@@ -191,12 +207,13 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
+				interceptor.MetricsInterceptor,
 				interceptor.GrpcValidateInterceptor,
 				interceptor.ErrorCodesInterceptor,
 			),
 		),
 	}
-	if isTSL {
+	if config.App().IsTSL() {
 		opts = append(opts, grpc.Creds(creds))
 	} else {
 		opts = append(opts, grpc.Creds(insecure.NewCredentials()))
@@ -212,6 +229,22 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	return nil
 }
 
+func (a *App) initPrometheus(ctx context.Context) error {
+	err := metric.Init(ctx)
+	if err != nil {
+		return err
+	}
+	mux := http.NewServeMux()
+	mux.Handle("/metrics", promhttp.Handler())
+
+	a.prometheusServer = &http.Server{
+		Addr:    config.Prometheus().Address(),
+		Handler: mux,
+	}
+
+	return nil
+}
+
 func (a *App) initHTTPServer(ctx context.Context) error {
 	grpcGatewayMux := runtime.NewServeMux()
 
@@ -221,7 +254,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 	}
 	opts := []grpc.DialOption{}
 
-	if isTSL {
+	if config.App().IsTSL() {
 		opts = append(opts, grpc.WithTransportCredentials(creds))
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
@@ -304,6 +337,17 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 		return fmt.Errorf("failed to serve: %w", err)
 	}
 	return errors.New("gRPC server closed")
+}
+func (a *App) runPrometheus(ctx context.Context) error {
+	blue := color.New(color.FgYellow).SprintFunc()
+	fmt.Printf("%-20s %s\n", blue("Prometheus:"), "http://"+config.Prometheus().Address()+"/metrics")
+
+	go func() {
+		<-ctx.Done()
+		_ = a.prometheusServer.Shutdown(ctx)
+	}()
+
+	return a.prometheusServer.ListenAndServe()
 }
 
 func (a *App) runHTTPServer(ctx context.Context) error {

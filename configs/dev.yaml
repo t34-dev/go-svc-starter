@@ -1,4 +1,5 @@
 app:
+    tsl: false
     is_production: false
     name: "SS0"
     log_level: "info"                    # debug, info, warn, error, panic, fatal
@@ -11,7 +12,11 @@ http:
     host: localhost
     port: 8080
 
-db:
+prometheus:
+    host: localhost
+    port: 2112
+
+pg:
     ssl_mode: "disable"
     min_conn: 5
     max_conn: 20

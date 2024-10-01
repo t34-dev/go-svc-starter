@@ -16,10 +16,11 @@ type result struct {
 var resultChan = make(chan result, 1)
 
 type config struct {
-	App  appConfig  `yaml:"app"`
-	Grpc grpcConfig `yaml:"grpc"`
-	Http httpConfig `yaml:"http"`
-	Pg   pgConfig   `yaml:"pg"`
+	App        appConfig        `yaml:"app"`
+	Grpc       grpcConfig       `yaml:"grpc"`
+	Http       httpConfig       `yaml:"http"`
+	Prometheus prometheusConfig `yaml:"prometheus"`
+	Pg         pgConfig         `yaml:"pg"`
 }
 
 func App() AppConfig {
@@ -35,6 +36,9 @@ func Grpc() GrpcConfig {
 
 func Http() HttpConfig {
 	return &cfg.Http
+}
+func Prometheus() PrometheusConfig {
+	return &cfg.Prometheus
 }
 func Pg() PgConfig {
 	return &cfg.Pg

@@ -3,13 +3,14 @@ PROTO_OUT := $(CURDIR)/pkg/api
 VENDOR := $(CURDIR)/.proto_vendor
 
 proto-bin:
+	GOBIN=$(BIN_DIR) go install github.com/bojand/ghz/cmd/ghz@v0.120.0
 	GOBIN=$(BIN_DIR) go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.28.1
 	GOBIN=$(BIN_DIR) go install -mod=mod google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.2
 	GOBIN=$(BIN_DIR) go install github.com/envoyproxy/protoc-gen-validate@v0.10.1
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway@v2.15.2
 	GOBIN=$(BIN_DIR) go install github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2@v2.22.0
 	GOBIN=$(BIN_DIR) go install github.com/fullstorydev/grpcurl/cmd/grpcurl@v1.9.1
-	GOBIN=$(BIN_DIR) go install github.com/go-swagger/go-swagger/cmd/swagger@latest
+	GOBIN=$(BIN_DIR) go install github.com/go-swagger/go-swagger/cmd/swagger@v0.31.0
 
 proto-vendor:
 	@mkdir -p $(VENDOR)
@@ -99,6 +100,7 @@ proto-merge:
 	@if [ ! -f $(PROTO_OUT)/api.swagger.json ]; then echo "Error: Swagger merge failed"; exit 1; fi
 	@echo "Swagger files merged"
 
+#================================ TESTS ================================
 proto-ping:
 	$(BIN_DIR)/grpcurl$(APP_EXT) -plaintext \
 		-proto $(PROTO_IN)/common_v1/common.proto \
@@ -108,5 +110,26 @@ proto-ping:
 		127.0.0.1:50051 \
 		common_v1.CommonV1/GetTime
 
+grpc-load-test:
+	$(BIN_DIR)/ghz$(APP_EXT) \
+        --proto $(PROTO_IN)/common_v1/common.proto \
+		-i $(VENDOR) \
+        --call common_v1.CommonV1.GetTime \
+        --data '{}' \
+        --rps 100 \
+        --total 3000 \
+        --insecure \
+        localhost:50051
+
+grpc-error-load-test:
+	$(BIN_DIR)/ghz$(APP_EXT) \
+        --proto $(PROTO_IN)/common_v1/common.proto \
+		-i $(VENDOR) \
+        --call common_v1.CommonV1.GetTime \
+        --data '{}' \
+		--rps 100 \
+		--total 3000 \
+		--insecure \
+		localhost:50051
 
 .PHONY: proto-bin proto-vendor proto proto-common proto-ping
