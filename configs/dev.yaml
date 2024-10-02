@@ -1,5 +1,5 @@
 app:
-    service_name: "go-svc-starter"
+    service_name: "go_svc_starter"
     tsl: false
     is_production: false
     name: "SS0"

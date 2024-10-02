@@ -237,7 +237,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) initPrometheus(ctx context.Context) error {
-	err := metric.Init(ctx)
+	err := metric.Init(ctx, config.App().ServiceName()+"_space", config.Prometheus().Address())
 	if err != nil {
 		return err
 	}

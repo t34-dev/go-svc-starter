@@ -31,12 +31,19 @@ include make/test.mk
 ################################# DEV
 NAME_SERVER=server
 NAME_CLIENT=client
+NAME_OTHER_SVC=other-svc
 
 build-server:
 	@rm -f .bin/$(NAME_SERVER)$(APP_EXT)
 	@go build -o .bin/$(NAME_SERVER)$(APP_EXT) cmd/server/*
 server: build-server
 	@.bin/$(NAME_SERVER)${APP_EXT}
+
+build-other-service:
+	@rm -f .bin/$(NAME_OTHER_SVC)$(APP_EXT)
+	@go build -o .bin/$(NAME_OTHER_SVC)$(APP_EXT) cmd/other_service/*
+other-service: build-other-service
+	@.bin/$(NAME_OTHER_SVC)${APP_EXT}
 
 build-client:
 	@rm -f .bin/$(NAME_CLIENT)$(APP_EXT)

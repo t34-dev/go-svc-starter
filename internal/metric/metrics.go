@@ -7,11 +7,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-const (
-	namespace = "my_space"
-	appName   = "my_app"
-)
-
 type Metrics struct {
 	requestCounter        prometheus.Counter
 	responseCounter       *prometheus.CounterVec
@@ -20,7 +15,7 @@ type Metrics struct {
 
 var metrics *Metrics
 
-func Init(_ context.Context) error {
+func Init(_ context.Context, namespace, appName string) error {
 	metrics = &Metrics{
 		requestCounter: promauto.NewCounter(
 			prometheus.CounterOpts{

@@ -25,9 +25,9 @@ func main() {
 			select {
 			case result := <-resultChan:
 				if result.Error != nil {
-					fmt.Println("Ошибка из Watch:", result.Error)
+					fmt.Println("Error from Watch:", result.Error)
 				} else {
-					fmt.Println("Успешно обновили")
+					fmt.Println("Successfully updated")
 				}
 			case <-ticker.C:
 				fmt.Println("FROM:", config.App().Name(), config.Grpc().Port())

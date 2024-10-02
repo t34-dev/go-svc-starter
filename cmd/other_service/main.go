@@ -70,7 +70,7 @@ func main() {
 	logs.Init(logger.GetCore(logger.GetAtomicLevel()))
 	tracing.Init(logs.Logger(), serviceName)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", grpcPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
