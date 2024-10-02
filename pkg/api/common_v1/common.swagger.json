@@ -120,6 +120,40 @@
           "CommonV1"
         ]
       }
+    },
+    "/api/UserDataV1/GetPost/{id}": {
+      "get": {
+        "summary": "Get post by ID",
+        "description": "Returns the post for the specified ID",
+        "operationId": "CommonV1_GetPost",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/common_v1PostResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "description": "Post ID",
+            "in": "path",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "CommonV1"
+        ]
+      }
     }
   },
   "definitions": {
@@ -156,6 +190,33 @@
         "FAILED"
       ],
       "default": "IN_PROGRESS"
+    },
+    "common_v1PostResponse": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "format": "int64",
+          "example": 1,
+          "description": "User ID"
+        },
+        "id": {
+          "type": "string",
+          "format": "int64",
+          "example": 1,
+          "description": "Post ID"
+        },
+        "title": {
+          "type": "string",
+          "example": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+          "description": "Post title"
+        },
+        "body": {
+          "type": "string",
+          "example": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto",
+          "description": "Post body"
+        }
+      }
     },
     "common_v1TimeResponse": {
       "type": "object",

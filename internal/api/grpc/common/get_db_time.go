@@ -10,15 +10,6 @@ import (
 )
 
 func (s *ImplementedCommon) GetDBTime(ctx context.Context, _ *emptypb.Empty) (*common_v1.TimeResponse, error) {
-	//id := int64(-11)
-	//err := validate.Validate(
-	//	ctx, validator.ValidateID(id), validator.ValidateID(int64(111)),
-	//)
-	//
-	//if err != nil {
-	//	return nil, err
-	//}
-
 	tt, err := s.service.Common.GetDBTime(ctx)
 	if err != nil {
 		return nil, sys.NewCommonError(err.Error(), codes.Internal)

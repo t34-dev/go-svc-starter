@@ -58,6 +58,15 @@ service CommonV1 {
 			description: "Returns the current DB time"
 		};
 	}
+	rpc GetPost(PostRequest) returns (PostResponse) {
+		option (google.api.http) = {
+			get: "/api/UserDataV1/GetPost/{id}"
+		};
+		option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+			summary: "Get post by ID"
+			description: "Returns the post for the specified ID"
+		};
+	}
 	rpc LongOperation(LongOperationRequest) returns (stream LongOperationResponse) {
 		option (google.api.http) = {
 			post: "/api/CommonV1/LongOperation"
@@ -70,6 +79,30 @@ service CommonV1 {
 	}
 }
 
+message PostRequest {
+	int32 id = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Post ID"
+		example: "1"
+	}];
+}
+message PostResponse {
+	int64 userId = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "User ID"
+		example: "1"
+	}];
+	int64 id = 2 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Post ID"
+		example: "1"
+	}];
+	string title = 3 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Post title"
+		example: "\"sunt aut facere repellat provident occaecati excepturi optio reprehenderit\""
+	}];
+	string body = 4 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+		description: "Post body"
+		example: "\"quia et suscipit\\nsuscipit recusandae consequuntur expedita et cum\\nreprehenderit molestiae ut ut quas totam\\nnostrum rerum est autem sunt rem eveniet architecto\""
+	}];
+}
 message TimeRequest {
 	bool error = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
 		description: "Error flag"

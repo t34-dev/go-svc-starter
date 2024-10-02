@@ -5,7 +5,6 @@ import (
 	"fmt"
 	grpcpool "github.com/t34-dev/go-grpc-pool"
 	"google.golang.org/grpc/credentials"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"log"
 	"time"
@@ -65,7 +64,9 @@ func main() {
 	ctx := context.Background()
 
 	// Requests
-	timeResp, err := c.GetTime(ctx, &emptypb.Empty{})
+	timeResp, err := c.GetTime(ctx, &common_v1.TimeRequest{
+		Error: false,
+	})
 	if err != nil {
 		log.Fatalf("could not get time: %v", err)
 	}

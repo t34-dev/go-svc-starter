@@ -2,6 +2,7 @@ package common_repository
 
 import (
 	"context"
+	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-utils/pkg/db"
 	"time"
 
@@ -9,21 +10,24 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 )
 
-var _ repository.CommonRepository = (*repo)(nil)
+var _ repository.CommonRepository = (*commonRepository)(nil)
 
-type repo struct {
+type commonRepository struct {
 	db      db.Client
 	builder sq.StatementBuilderType
 }
 
 func New(db db.Client) repository.CommonRepository {
-	return &repo{
+	return &commonRepository{
 		db:      db,
 		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
 	}
 }
 
-func (r repo) GetTime(ctx context.Context) (time.Time, error) {
+func (r commonRepository) GetTime(ctx context.Context) (time.Time, error) {
+	ctx, finish := tracing.TraceFunc(ctx, "commonRepository.GetTime", nil)
+	defer finish()
+
 	var dbTime time.Time
 
 	query, args, err := r.builder.

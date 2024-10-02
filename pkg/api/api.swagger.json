@@ -242,6 +242,40 @@
           }
         }
       }
+    },
+    "/api/UserDataV1/GetPost/{id}": {
+      "get": {
+        "description": "Returns the post for the specified ID",
+        "tags": [
+          "CommonV1"
+        ],
+        "summary": "Get post by ID",
+        "operationId": "CommonV1_GetPost",
+        "parameters": [
+          {
+            "type": "integer",
+            "format": "int32",
+            "description": "Post ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/common_v1PostResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -344,6 +378,33 @@
         "COMPLETED",
         "FAILED"
       ]
+    },
+    "common_v1PostResponse": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "description": "Post body",
+          "type": "string",
+          "example": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+        },
+        "id": {
+          "description": "Post ID",
+          "type": "string",
+          "format": "int64",
+          "example": 1
+        },
+        "title": {
+          "description": "Post title",
+          "type": "string",
+          "example": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+        },
+        "userId": {
+          "description": "User ID",
+          "type": "string",
+          "format": "int64",
+          "example": 1
+        }
+      }
     },
     "common_v1TimeResponse": {
       "type": "object",

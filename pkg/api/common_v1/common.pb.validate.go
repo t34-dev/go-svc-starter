@@ -35,6 +35,214 @@ var (
 	_ = sort.Sort
 )
 
+// Validate checks the field values on PostRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PostRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PostRequest with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PostRequestMultiError, or
+// nil if none found.
+func (m *PostRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PostRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	if len(errors) > 0 {
+		return PostRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// PostRequestMultiError is an error wrapping multiple validation errors
+// returned by PostRequest.ValidateAll() if the designated constraints aren't met.
+type PostRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PostRequestMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PostRequestMultiError) AllErrors() []error { return m }
+
+// PostRequestValidationError is the validation error returned by
+// PostRequest.Validate if the designated constraints aren't met.
+type PostRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PostRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PostRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PostRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PostRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PostRequestValidationError) ErrorName() string { return "PostRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PostRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPostRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PostRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PostRequestValidationError{}
+
+// Validate checks the field values on PostResponse with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *PostResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on PostResponse with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PostResponseMultiError, or
+// nil if none found.
+func (m *PostResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *PostResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for UserId
+
+	// no validation rules for Id
+
+	// no validation rules for Title
+
+	// no validation rules for Body
+
+	if len(errors) > 0 {
+		return PostResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// PostResponseMultiError is an error wrapping multiple validation errors
+// returned by PostResponse.ValidateAll() if the designated constraints aren't met.
+type PostResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PostResponseMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PostResponseMultiError) AllErrors() []error { return m }
+
+// PostResponseValidationError is the validation error returned by
+// PostResponse.Validate if the designated constraints aren't met.
+type PostResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PostResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PostResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PostResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PostResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PostResponseValidationError) ErrorName() string { return "PostResponseValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PostResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPostResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PostResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PostResponseValidationError{}
+
 // Validate checks the field values on TimeRequest with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.

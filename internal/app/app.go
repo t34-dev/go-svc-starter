@@ -12,6 +12,7 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
 	"github.com/t34-dev/go-svc-starter/internal/logger"
 	"github.com/t34-dev/go-svc-starter/internal/metric"
+	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
@@ -120,6 +121,7 @@ func (a *App) initDeps(ctx context.Context) error {
 		a.initConfig,
 		a.checkConfig,
 		a.initLogger,
+		a.initTracer,
 		a.initServiceProvider,
 		a.initGRPCServer,
 		a.initPrometheus,
@@ -192,6 +194,10 @@ func (a *App) initLogger(_ context.Context) error {
 	logs.Init(logger.GetCore(logger.GetAtomicLevel()))
 	return nil
 }
+func (a *App) initTracer(_ context.Context) error {
+	tracing.Init(logs.Logger(), config.App().ServiceName())
+	return nil
+}
 
 func (a *App) initServiceProvider(_ context.Context) error {
 	a.serviceProvider = newServiceProvider()
@@ -207,6 +213,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 	opts := []grpc.ServerOption{
 		grpc.UnaryInterceptor(
 			grpcMiddleware.ChainUnaryServer(
+				interceptor.ServerTracingInterceptor,
 				interceptor.MetricsInterceptor,
 				interceptor.GrpcValidateInterceptor,
 				interceptor.ErrorCodesInterceptor,
@@ -341,6 +348,7 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 func (a *App) runPrometheus(ctx context.Context) error {
 	blue := color.New(color.FgYellow).SprintFunc()
 	fmt.Printf("%-20s %s\n", blue("Prometheus:"), "http://"+config.Prometheus().Address()+"/metrics")
+	fmt.Printf("%-20s %s\n", blue("Grafana:"), "http://"+config.Prometheus().Host()+":3000")
 
 	go func() {
 		<-ctx.Done()

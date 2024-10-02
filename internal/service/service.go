@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"github.com/t34-dev/go-svc-starter/internal/model"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	"time"
 )
@@ -27,6 +28,7 @@ type Service struct {
 type CommonService interface {
 	GetDBTime(ctx context.Context) (time.Time, error)
 	GetTime(ctx context.Context) (time.Time, error)
+	GetPost(ctx context.Context, id int64) (*model.Post, error)
 }
 type AccessService interface {
 	Check(ctx context.Context, path string) (bool, error)
