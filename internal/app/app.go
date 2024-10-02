@@ -180,7 +180,7 @@ func (a *App) initConfig(ctx context.Context) error {
 					}
 				}
 			case <-ticker.C:
-				logs.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().Name(), config.Grpc().Port(), config.App().LogLevel()))
+				logs.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().ServiceName(), config.Grpc().Port(), config.App().LogLevel()))
 			}
 		}
 	}()
@@ -237,7 +237,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) initPrometheus(ctx context.Context) error {
-	err := metric.Init(ctx, config.App().ServiceName()+"_space", config.Prometheus().Address())
+	err := metric.Init(ctx, "my_space", config.App().ServiceName())
 	if err != nil {
 		return err
 	}
@@ -329,6 +329,7 @@ func (a *App) initHTTPServer(ctx context.Context) error {
 func (a *App) runGRPCServer(ctx context.Context) error {
 	blue := color.New(color.FgYellow).SprintFunc()
 	fmt.Printf("%-20s %s\n", blue("gRPC:"), "http://"+config.Grpc().Address()+"/")
+	fmt.Printf("%-20s %s\n", blue("Trace:"), "http://"+config.Grpc().Host()+":16686")
 
 	list, err := net.Listen("tcp", config.Grpc().Address())
 	if err != nil {
@@ -347,7 +348,8 @@ func (a *App) runGRPCServer(ctx context.Context) error {
 }
 func (a *App) runPrometheus(ctx context.Context) error {
 	blue := color.New(color.FgYellow).SprintFunc()
-	fmt.Printf("%-20s %s\n", blue("Prometheus:"), "http://"+config.Prometheus().Address()+"/metrics")
+	fmt.Printf("%-20s %s\n", blue("Metrics:"), "http://"+config.Prometheus().Address()+"/metrics")
+	fmt.Printf("%-20s %s\n", blue("Prometheus:"), "http://"+config.Prometheus().Host()+":9090")
 	fmt.Printf("%-20s %s\n", blue("Grafana:"), "http://"+config.Prometheus().Host()+":3000")
 
 	go func() {

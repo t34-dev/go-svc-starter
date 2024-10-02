@@ -6,7 +6,6 @@ type AppConfig interface {
 	ServiceName() string
 	IsTSL() bool
 	IsProduction() bool
-	Name() string
 	LogLevel() string
 }
 type appConfig struct {
@@ -25,10 +24,6 @@ func (a *appConfig) IsTSL() bool {
 }
 func (a *appConfig) IsProduction() bool {
 	return a.IsProductionVal
-}
-
-func (a *appConfig) Name() string {
-	return a.NameVal
 }
 
 func (a *appConfig) LogLevel() string {
