@@ -2,7 +2,6 @@ package common
 
 import (
 	"context"
-	"github.com/opentracing/opentracing-go"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"github.com/t34-dev/go-utils/pkg/sys"
 	"github.com/t34-dev/go-utils/pkg/sys/codes"
@@ -10,10 +9,6 @@ import (
 )
 
 func (s *ImplementedCommon) GetTime(ctx context.Context, req *common_v1.TimeRequest) (*common_v1.TimeResponse, error) {
-	span, ctx := opentracing.StartSpanFromContext(ctx, "GetTime")
-	defer span.Finish()
-	span.SetTag("myError", req.GetError())
-
 	if req.GetError() {
 		return nil, sys.NewCommonError("Error message!", codes.Internal)
 	}
