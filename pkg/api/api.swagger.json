@@ -253,8 +253,8 @@
         "operationId": "CommonV1_GetPost",
         "parameters": [
           {
-            "type": "integer",
-            "format": "int32",
+            "type": "string",
+            "format": "int64",
             "description": "Post ID",
             "name": "id",
             "in": "path",

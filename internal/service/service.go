@@ -2,20 +2,23 @@ package service
 
 import (
 	"context"
+	othergrpcservice "github.com/t34-dev/go-svc-starter/internal/client/other_grpc_service"
 	"github.com/t34-dev/go-svc-starter/internal/model"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	"time"
 )
 
 type Dependencies struct {
-	Service Service
-	Repos   repository.Repository
+	Service      Service
+	Repos        repository.Repository
+	OtherService othergrpcservice.OtherGRPCService
 }
 
-func NewDeps(service Service, repos repository.Repository) Dependencies {
+func NewDeps(service Service, repos repository.Repository, otherService othergrpcservice.OtherGRPCService) Dependencies {
 	return Dependencies{
-		Service: service,
-		Repos:   repos,
+		Service:      service,
+		Repos:        repos,
+		OtherService: otherService,
 	}
 }
 

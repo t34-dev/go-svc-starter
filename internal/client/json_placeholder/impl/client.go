@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	jsonplaceholder "github.com/t34-dev/go-svc-starter/internal/client/json_placeholder"
+	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"io"
 	"net/http"
 	"time"
@@ -41,6 +42,9 @@ func NewService(options ...ServiceOption) jsonplaceholder.JSONPlaceholderService
 
 // GetPost retrieves a post by its ID
 func (s *service) GetPost(ctx context.Context, id int) (*jsonplaceholder.Post, error) {
+	ctx, finish := tracing.TraceFunc(ctx, "server.GetPost", map[string]interface{}{"id": id})
+	defer finish()
+
 	url := fmt.Sprintf("%s/posts/%d", baseURL, id)
 	var post jsonplaceholder.Post
 	err := s.fetchJSON(ctx, http.MethodGet, url, &post)
@@ -52,6 +56,9 @@ func (s *service) GetPost(ctx context.Context, id int) (*jsonplaceholder.Post, e
 
 // GetPosts retrieves all posts
 func (s *service) GetPosts(ctx context.Context) ([]*jsonplaceholder.Post, error) {
+	ctx, finish := tracing.TraceFunc(ctx, "server.GetPosts", nil)
+	defer finish()
+
 	url := fmt.Sprintf("%s/posts", baseURL)
 	var posts []*jsonplaceholder.Post
 	err := s.fetchJSON(ctx, http.MethodGet, url, &posts)
@@ -63,6 +70,9 @@ func (s *service) GetPosts(ctx context.Context) ([]*jsonplaceholder.Post, error)
 
 // GetComments retrieves comments for a post
 func (s *service) GetComments(ctx context.Context, postID int) ([]*jsonplaceholder.Comment, error) {
+	ctx, finish := tracing.TraceFunc(ctx, "server.GetComments", map[string]interface{}{"postID": postID})
+	defer finish()
+
 	url := fmt.Sprintf("%s/posts/%d/comments", baseURL, postID)
 	var comments []*jsonplaceholder.Comment
 	err := s.fetchJSON(ctx, http.MethodGet, url, &comments)
@@ -74,6 +84,9 @@ func (s *service) GetComments(ctx context.Context, postID int) ([]*jsonplacehold
 
 // GetUser retrieves user information by ID
 func (s *service) GetUser(ctx context.Context, id int) (*jsonplaceholder.User, error) {
+	ctx, finish := tracing.TraceFunc(ctx, "server.GetUser", map[string]interface{}{"id": id})
+	defer finish()
+
 	url := fmt.Sprintf("%s/users/%d", baseURL, id)
 	var user jsonplaceholder.User
 	err := s.fetchJSON(ctx, http.MethodGet, url, &user)

@@ -9,12 +9,12 @@ type Role string
 const (
 	AdminRole Role = "Admin"
 	VipRole   Role = "Vip"
-	// дополнительные роли по мере необходимости
+	// additional roles as needed
 )
 
 type Roles []Role
 
-// String Преобразовать роли в строку через запятую
+// String Convert roles to a comma-separated string
 func (r Roles) String() string {
 	rolesAsStrings := make([]string, len(r))
 	for i, role := range r {
@@ -23,7 +23,7 @@ func (r Roles) String() string {
 	return strings.Join(rolesAsStrings, ",")
 }
 
-// HasRoles Проверяет наличие всех указанных ролей в текущем массиве ролей
+// HasRoles Checks if all specified roles are present in the current array of roles
 func (r Roles) HasRoles(roles ...Role) bool {
 	for _, roleToCheck := range roles {
 		found := false
@@ -33,7 +33,7 @@ func (r Roles) HasRoles(roles ...Role) bool {
 				break
 			}
 		}
-		// Если хотя бы одна из ролей не найдена, вернем false
+		// If at least one of the roles is not found, return false
 		if !found {
 			return false
 		}
@@ -41,7 +41,7 @@ func (r Roles) HasRoles(roles ...Role) bool {
 	return true
 }
 
-// AddRoles добавляет роли, которые еще не присутствуют
+// AddRoles adds roles that are not already present
 func (r *Roles) AddRoles(roles ...Role) {
 	for _, roleToAdd := range roles {
 		found := false
@@ -57,7 +57,7 @@ func (r *Roles) AddRoles(roles ...Role) {
 	}
 }
 
-// RemoveRoles удаляет роли, если они присутствуют
+// RemoveRoles removes roles if they are present
 func (r *Roles) RemoveRoles(roles ...Role) {
 	for _, roleToRemove := range roles {
 		indexToRemove := -1

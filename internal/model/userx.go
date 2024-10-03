@@ -4,7 +4,6 @@ import (
 	"time"
 )
 
-// UserX структура пользователя
 type User struct {
 	Created        time.Time  `json:"created" db:"created" example:"2021-12-01 15:00:45"`
 	Nickname       string     `json:"nickname" binding:"required,min=3,max=50" example:"zak"`

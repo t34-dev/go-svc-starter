@@ -1,13 +1,11 @@
-package grpc_impl
+package othergrpcservice
 
 import (
-	"github.com/t34-dev/go-svc-starter/internal/api/grpc/access"
-	"github.com/t34-dev/go-svc-starter/internal/api/grpc/auth"
-	"github.com/t34-dev/go-svc-starter/internal/api/grpc/common"
+	"context"
+	"github.com/t34-dev/go-svc-starter/internal/model"
 )
 
-type OtherClient struct {
-	Common *common.ImplementedCommon
-	Access *access.ImplementedAccess
-	Auth   *auth.ImplementedAuth
+type OtherGRPCService interface {
+	GetPost(ctx context.Context, id int64) (*model.Post, error)
+	GetPosts(ctx context.Context) ([]*model.Post, error)
 }

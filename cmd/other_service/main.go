@@ -32,7 +32,7 @@ type server struct {
 }
 
 func (s *server) GetPost(ctx context.Context, req *common_v1.PostRequest) (*common_v1.PostResponse, error) {
-	id := int64(req.GetId())
+	id := req.GetId()
 	ctx, finish := tracing.TraceFunc(ctx, "server.GetPost", map[string]interface{}{"id": id})
 	defer finish()
 

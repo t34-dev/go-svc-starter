@@ -80,7 +80,7 @@ service CommonV1 {
 }
 
 message PostRequest {
-	int32 id = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
+	int64 id = 1 [(grpc.gateway.protoc_gen_openapiv2.options.openapiv2_field) = {
 		description: "Post ID"
 		example: "1"
 	}];
