@@ -5,25 +5,27 @@ import (
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/opentracing/opentracing-go"
+	jsonplaceholder "github.com/t34-dev/go-svc-starter/internal/client/json_placeholder"
+	jsonplaceholderImpl "github.com/t34-dev/go-svc-starter/internal/client/json_placeholder/impl"
 	"github.com/t34-dev/go-svc-starter/internal/logger"
 	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-svc-starter/internal/validator"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"github.com/t34-dev/go-utils/pkg/logs"
 	"github.com/t34-dev/go-utils/pkg/sys/validate"
-	"github.com/tidwall/gjson"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"io"
 	"log"
 	"net"
-	"net/http"
+	"time"
 )
 
 const (
 	grpcPort    = 50052
 	serviceName = "other_service"
 )
+
+var service jsonplaceholder.JSONPlaceholderService
 
 type server struct {
 	common_v1.UnimplementedCommonV1Server
@@ -40,26 +42,15 @@ func (s *server) GetPost(ctx context.Context, req *common_v1.PostRequest) (*comm
 		return nil, err
 	}
 
-	url := fmt.Sprintf("https://jsonplaceholder.typicode.com/posts/%d", id)
-	resp, err := http.Get(url)
+	post, err := service.GetPost(ctx, int(id))
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch post: %v", err)
+		return nil, err
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
-	}
-
-	// parse JSON using gjson
-	result := gjson.ParseBytes(body)
-
 	return &common_v1.PostResponse{
-		UserId: result.Get("userId").Int(),
-		Id:     result.Get("id").Int(),
-		Title:  result.Get("title").String(),
-		Body:   result.Get("body").String(),
+		UserId: int64(post.UserID),
+		Id:     int64(post.ID),
+		Title:  post.Title,
+		Body:   post.Body,
 	}, nil
 }
 
@@ -75,6 +66,13 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	// SERVICE
+	service = jsonplaceholderImpl.NewService(
+		jsonplaceholderImpl.WithTimeout(time.Second*10),
+		jsonplaceholderImpl.WithUserAgent("MyApp/1.0"),
+	)
+
+	// SERVER
 	s := grpc.NewServer(
 		grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(opentracing.GlobalTracer())),
 	)
