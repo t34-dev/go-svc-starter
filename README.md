@@ -1,4 +1,4 @@
-# go-svc-starter
+# go-svc-starter (Template)
 
 
 ```shell
