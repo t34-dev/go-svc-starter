@@ -145,7 +145,7 @@ func (s *serviceProvider) OtherGrpc(_ context.Context) othergrpcservice.OtherGRP
 			ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 			defer cancel()
 
-			return grpc.DialContext(ctx, "localhost:50052", opts...)
+			return grpc.DialContext(ctx, config.MS().OtherGrpcAddress(), opts...)
 		}
 
 		// Create a new connection pool
@@ -154,7 +154,7 @@ func (s *serviceProvider) OtherGrpc(_ context.Context) othergrpcservice.OtherGRP
 			MaxConn: 30,
 		})
 		if err != nil {
-			logs.Fatal("failed to create connection pool:", zap.Error(err))
+			logs.Fatal(fmt.Sprintf("failed to connect to GRPC: %s", config.MS().OtherGrpcAddress()), zap.Error(err))
 		}
 		closer.Add(func() error {
 			grpcPool.Close()

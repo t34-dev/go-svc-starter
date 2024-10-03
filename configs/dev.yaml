@@ -1,8 +1,8 @@
 app:
-    service_name: "go_svc_starter"
+    service_name: go_svc_starter
     tsl: false
     is_production: false
-    log_level: "info"                    # debug, info, warn, error, panic, fatal
+    log_level: info                    # debug, info, warn, error, panic, fatal
 
 grpc:
     host: localhost
@@ -17,6 +17,9 @@ prometheus:
     port: 2112
 
 pg:
-    ssl_mode: "disable"
+    ssl_mode: disable
     min_conn: 5
     max_conn: 20
+
+ms:
+    other_grpc_address: localhost:50052

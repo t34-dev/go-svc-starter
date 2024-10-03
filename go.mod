@@ -17,7 +17,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.1
-	github.com/t34-dev/go-grpc-pool v1.0.4
+	github.com/t34-dev/go-grpc-pool v1.0.5
 	github.com/t34-dev/go-utils v0.0.5
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.24.0

@@ -207,6 +207,8 @@ github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKs
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/t34-dev/go-grpc-pool v1.0.4 h1:wg/dnd9j0S6WGtzXEnCvUKA58PHG0OBBxcMCrUTE5ZE=
 github.com/t34-dev/go-grpc-pool v1.0.4/go.mod h1:4Qdb9W1jqV1WgRgKdZz7mG6Z2NfOfL1jxAAfYemu9rY=
+github.com/t34-dev/go-grpc-pool v1.0.5 h1:1cyeooY/K2tc/fhjNFnX26M5F1Nqh1UFH8T239YKUo0=
+github.com/t34-dev/go-grpc-pool v1.0.5/go.mod h1:4Qdb9W1jqV1WgRgKdZz7mG6Z2NfOfL1jxAAfYemu9rY=
 github.com/t34-dev/go-utils v0.0.3 h1:meJluDXAY9fVOxejXxSrwzmlaxLlUHEFtvXgz8KoFs4=
 github.com/t34-dev/go-utils v0.0.3/go.mod h1:PhnhvdenjnRA5lChvwJB9hFWLSTaHxQv/y3bpzK4JEY=
 github.com/t34-dev/go-utils v0.0.4 h1:a/cy+0AVwrR79NEYSq+fenHcVC6cJ72qdDNfNzqPgk4=

@@ -21,6 +21,7 @@ type config struct {
 	Http       httpConfig       `yaml:"http"`
 	Prometheus prometheusConfig `yaml:"prometheus"`
 	Pg         pgConfig         `yaml:"pg"`
+	MS         msConfig         `yaml:"ms"`
 }
 
 func App() AppConfig {
@@ -32,6 +33,9 @@ func GetAllConfig() *config {
 
 func Grpc() GrpcConfig {
 	return &cfg.Grpc
+}
+func MS() MSConfig {
+	return &cfg.MS
 }
 
 func Http() HttpConfig {
