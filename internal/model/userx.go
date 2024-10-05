@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type User struct {
+type UserX struct {
 	Created        time.Time  `json:"created" db:"created" example:"2021-12-01 15:00:45"`
 	Nickname       string     `json:"nickname" binding:"required,min=3,max=50" example:"zak"`
 	Email          string     `json:"email" binding:"required,email,max=64" db:"email" example:"root@gmail.com"`

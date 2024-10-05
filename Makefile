@@ -1,4 +1,4 @@
-APP_NAME ?= go-svc-starter
+APP_NAME = go-svc-starter
 APP_REPOSITORY := gitlab.com/t34-dev
 %:
 	@:

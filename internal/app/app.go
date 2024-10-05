@@ -219,7 +219,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 			grpcMiddleware.ChainUnaryServer(
 				interceptor.ServerTracingInterceptor,
 				interceptor.MetricsInterceptor,
-				interceptor.GrpcValidateInterceptor,
+				//interceptor.GrpcValidateInterceptor,
 				interceptor.ErrorCodesInterceptor,
 			),
 		),
