@@ -58,7 +58,7 @@ func main() {
 	if err := logger.SetLogLevel("info"); err != nil {
 		log.Println(err)
 	}
-	logs.Init(logger.GetCore(logger.GetAtomicLevel()))
+	logs.Init(logger.GetCore(logger.GetAtomicLevel(), "logs/other_service.log"))
 	tracing.Init(logs.Logger(), serviceName)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))

@@ -6,6 +6,11 @@ import (
 	"github.com/t34-dev/go-svc-starter/pkg/iconfig"
 )
 
+const (
+	defaultEnvironment = "local"
+	defaultServiceName = "NO_SERVICE_NAME"
+)
+
 var cfg *config
 
 type result struct {

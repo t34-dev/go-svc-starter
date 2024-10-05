@@ -2,6 +2,7 @@ package metric
 
 import (
 	"context"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -16,6 +17,8 @@ type Metrics struct {
 var metrics *Metrics
 
 func Init(_ context.Context, namespace, appName string) error {
+	namespace = strings.Replace(namespace, "-", "_", -1)
+	appName = strings.Replace(appName, "-", "_", -1)
 	metrics = &Metrics{
 		requestCounter: promauto.NewCounter(
 			prometheus.CounterOpts{

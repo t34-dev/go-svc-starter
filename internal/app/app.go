@@ -66,7 +66,10 @@ func (a *App) Run(ctxMain context.Context) error {
 	errChan := make(chan error)
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	fmt.Println(strings.Repeat("=", 50))
+	fmt.Println(strings.Repeat("-", 49) + "+")
+	fmt.Println(fmt.Sprintf("%-15s %-32s |", "ENV:", config.App().Environment()))
+	fmt.Println(fmt.Sprintf("%-15s %-32s |", "APP_NAME:", config.App().AppName()))
+	fmt.Println(strings.Repeat("-", 49) + "+")
 
 	servers := []struct {
 		name      string
@@ -180,7 +183,7 @@ func (a *App) initConfig(ctx context.Context) error {
 					}
 				}
 			case <-ticker.C:
-				logs.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().ServiceName(), config.Grpc().Port(), config.App().LogLevel()))
+				logs.Debug(fmt.Sprintf("FROM: %s %s %s", config.App().AppName(), config.Grpc().Port(), config.App().LogLevel()))
 			}
 		}
 	}()
@@ -191,11 +194,12 @@ func (a *App) initLogger(_ context.Context) error {
 	if err := logger.SetLogLevel(config.App().LogLevel()); err != nil {
 		return err
 	}
-	logs.Init(logger.GetCore(logger.GetAtomicLevel()))
+	logPath := fmt.Sprintf("logs/%s.log", config.App().AppName())
+	logs.Init(logger.GetCore(logger.GetAtomicLevel(), logPath))
 	return nil
 }
 func (a *App) initTracer(_ context.Context) error {
-	tracing.Init(logs.Logger(), config.App().ServiceName())
+	tracing.Init(logs.Logger(), config.App().AppName())
 	return nil
 }
 
@@ -237,7 +241,7 @@ func (a *App) initGRPCServer(ctx context.Context) error {
 }
 
 func (a *App) initPrometheus(ctx context.Context) error {
-	err := metric.Init(ctx, "my_space", config.App().ServiceName())
+	err := metric.Init(ctx, "my_space", config.App().AppName())
 	if err != nil {
 		return err
 	}

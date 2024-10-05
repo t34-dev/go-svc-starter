@@ -16,7 +16,6 @@ debug.log
 node_modules/
 /.gradle/
 
-devops
 .devops/.temp/
 
 # proto

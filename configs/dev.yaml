@@ -1,5 +1,4 @@
 app:
-    service_name: go_svc_starter
     tsl: false
     is_production: false
     log_level: info                    # debug, info, warn, error, panic, fatal

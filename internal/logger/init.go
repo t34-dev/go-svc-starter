@@ -11,11 +11,11 @@ var (
 	atomicLevel zap.AtomicLevel = zap.NewAtomicLevelAt(zap.InfoLevel)
 )
 
-func GetCore(level zap.AtomicLevel) zapcore.Core {
+func GetCore(level zap.AtomicLevel, pathname string) zapcore.Core {
 	stdout := zapcore.AddSync(os.Stdout)
 
 	file := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   "logs/app.log",
+		Filename:   pathname,
 		MaxSize:    10, // megabytes
 		MaxBackups: 3,
 		MaxAge:     7, // days

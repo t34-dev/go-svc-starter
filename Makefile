@@ -1,4 +1,4 @@
-APP_NAME := go-svc-starter
+APP_NAME ?= go-svc-starter
 APP_REPOSITORY := gitlab.com/t34-dev
 %:
 	@:
@@ -7,8 +7,8 @@ export GOPRIVATE=$(APP_REPOSITORY)/*
 export GOPRIVATE=github.com/t34-dev/*
 export COMPOSE_PROJECT_NAME
 # ============================== Environments
-PROJECT_NAME ?= $(APP_NAME)
-ENV ?= local
+SERVICE_NAME = $(APP_NAME)
+ENV = local
 FOLDER ?= /root
 VERSION ?=
 # ============================== Paths
@@ -24,10 +24,12 @@ include make/get-started.mk
 include make/proto.mk
 include make/lint.mk
 include make/test.mk
+include make/cert.mk
+include make/compose.mk
 
 info: set-env
 	@echo "================ [ ENVIRONMENT: $(ENV) ] ================"
-	@echo "PROJECT_NAME: $(PROJECT_NAME)"
+	@echo "SERVICE_NAME: $(SERVICE_NAME)"
 	@echo ""
 
 #GOPROXY=direct go list -m -versions PACKAGE
@@ -36,33 +38,25 @@ info: set-env
 ################################# DEV
 NAME_SERVER=server
 NAME_CLIENT=client
-NAME_OTHER_SVC=other-svc
+NAME_OTHER_SVC=other-service
 
-build-server:
-	@rm -f .bin/$(NAME_SERVER)$(APP_EXT)
-	@go build -o .bin/$(NAME_SERVER)$(APP_EXT) cmd/server/*
+build-server: set-env info
+	@rm -f $(BIN_DIR)/$(NAME_SERVER)$(APP_EXT)
+	@go build -o $(BIN_DIR)/$(NAME_SERVER)$(APP_EXT) cmd/$(NAME_SERVER)/*
 server: build-server
-	@.bin/$(NAME_SERVER)${APP_EXT}
+	@export ENV=$(ENV) APP_NAME=$(APP_NAME) && $(BIN_DIR)/$(NAME_SERVER)${APP_EXT}
 
-build-other-service:
-	@rm -f .bin/$(NAME_OTHER_SVC)$(APP_EXT)
-	@go build -o .bin/$(NAME_OTHER_SVC)$(APP_EXT) cmd/other_service/*
+build-other-service: set-env
+	@rm -f $(BIN_DIR)/$(NAME_OTHER_SVC)$(APP_EXT)
+	@go build -o $(BIN_DIR)/$(NAME_OTHER_SVC)$(APP_EXT) cmd/$(NAME_OTHER_SVC)/*
 other-service: build-other-service
-	@.bin/$(NAME_OTHER_SVC)${APP_EXT}
+	@$(BIN_DIR)/$(NAME_OTHER_SVC)${APP_EXT}
 
-build-client:
-	@rm -f .bin/$(NAME_CLIENT)$(APP_EXT)
-	go build -o .bin/$(NAME_CLIENT)$(APP_EXT) cmd/client/*
+build-client: set-env
+	@rm -f $(BIN_DIR)/$(NAME_CLIENT)$(APP_EXT)
+	go build -o $(BIN_DIR)/$(NAME_CLIENT)$(APP_EXT) cmd/$(NAME_CLIENT)/*
 client: build-client
-	@.bin/$(NAME_CLIENT)${APP_EXT}
+	@$(BIN_DIR)/$(NAME_CLIENT)${APP_EXT}
 
 
 
-cert-gen:
-	mkdir -p cert
-	openssl genrsa -out cert/ca.key 4096
-	openssl req -new -x509 -key cert/ca.key -sha256 -subj "//C=US/ST=NJ/O=CA, Inc." -days 365 -out cert/ca.cert
-	openssl genrsa -out cert/service.key 4096
-	openssl req -new -key cert/service.key -out cert/service.csr -config cert/certificate.conf
-	openssl x509 -req -in cert/service.csr -CA cert/ca.cert -CAkey cert/ca.key -CAcreateserial \
-		-out cert/service.pem -days 365 -sha256 -extfile cert/certificate.conf -extensions req_ext

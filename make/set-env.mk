@@ -17,8 +17,8 @@ init-env-file:
 		$(warning .env.$(ENV) does not exist. Skipping copy.))
 
 set-env: init-env-file include-env-file include-secret-git-file
-	@$(eval PROJECT_NAME := $(APP_NAME)_$(ENV))
-	@$(eval COMPOSE_PROJECT_NAME := $(PROJECT_NAME))
+	@$(eval SERVICE_NAME := $(APP_NAME)_$(ENV))
+	@$(eval COMPOSE_PROJECT_NAME := $(SERVICE_NAME))
 
 
 set-gitlab-config: set-env

@@ -18,13 +18,13 @@ services:
       interval: 1s
       timeout: 1s
       retries: 20
-      test: ["CMD-SHELL", "pg_isready -U $DB_USER -d $DB_NAME"]
+      test: ["CMD-SHELL", "pg_isready -U $PG_USER -d $PG_NAME"]
     environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_NAME}
     ports:
-      - "${DB_PORT}:5432"
+      - "${PG_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -35,13 +35,13 @@ services:
     hostname: ${COMPOSE_PROJECT_NAME}-migrate
     image: migrate/migrate
     volumes:
-      - ./migrations:/migrations
+      - ../migrations/pg:/migrations
     depends_on:
       db:
         condition: service_healthy
     entrypoint: ["/bin/sh", "-c"]
     command: >
-      "migrate -path /migrations/pg -database \"postgres://${DB_USER}:${DB_PASSWORD}@${COMPOSE_PROJECT_NAME}-db:5432/${DB_NAME}?sslmode=disable\" ${MIGRATION_COMMAND}"
+      "migrate -path /migrations -database \"postgres://${PG_USER}:${PG_PASSWORD}@${COMPOSE_PROJECT_NAME}-db:5432/${PG_NAME}?sslmode=disable\" ${MIGRATION_COMMAND}"
     networks:
       - default
 
@@ -51,8 +51,8 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - ../prometheus.yml:/etc/prometheus/prometheus.yml
+      - ../alerts.yml:/etc/prometheus/alerts.yml
       - prometheus_data:/prometheus
 
   grafana:
