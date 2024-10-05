@@ -1,5 +1,5 @@
 APP_NAME := go-svc-starter
-APP_REPOSITORY := gitlab.com/zakon47
+APP_REPOSITORY := gitlab.com/t34-dev
 %:
 	@:
 MAKEFLAGS += --no-print-directory
@@ -7,6 +7,7 @@ export GOPRIVATE=$(APP_REPOSITORY)/*
 export GOPRIVATE=github.com/t34-dev/*
 export COMPOSE_PROJECT_NAME
 # ============================== Environments
+PROJECT_NAME ?= $(APP_NAME)
 ENV ?= local
 FOLDER ?= /root
 VERSION ?=
@@ -16,14 +17,18 @@ BIN_DIR := $(CURDIR)/.bin
 DEVOPS_DIR := $(CURDIR)/.devops
 TEMP_DIR := $(CURDIR)/.temp
 ENV_FILE := $(CURDIR)/.env
-SECRET_FILE := $(CURDIR)/.secrets
 CONFIG_DIR := $(CURDIR)/configs
 # ============================== Includes
+include make/set-env.mk
 include make/get-started.mk
 include make/proto.mk
 include make/lint.mk
 include make/test.mk
 
+info: set-env
+	@echo "================ [ ENVIRONMENT: $(ENV) ] ================"
+	@echo "PROJECT_NAME: $(PROJECT_NAME)"
+	@echo ""
 
 #GOPROXY=direct go list -m -versions PACKAGE
 #go get -u=patch PACKAGE

@@ -1,0 +1,76 @@
+version: '3.9'
+
+volumes:
+  prometheus_data:
+  grafana_data:
+  postgres_data:
+    name: ${COMPOSE_PROJECT_NAME}_DATA
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME}_network
+
+services:
+  db:
+    image: postgres:16.1
+    container_name: ${COMPOSE_PROJECT_NAME}-db
+    healthcheck:
+      interval: 1s
+      timeout: 1s
+      retries: 20
+      test: ["CMD-SHELL", "pg_isready -U $DB_USER -d $DB_NAME"]
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - default
+
+  migrate:
+    container_name: ${COMPOSE_PROJECT_NAME}-migrate
+    hostname: ${COMPOSE_PROJECT_NAME}-migrate
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["/bin/sh", "-c"]
+    command: >
+      "migrate -path /migrations/pg -database \"postgres://${DB_USER}:${DB_PASSWORD}@${COMPOSE_PROJECT_NAME}-db:5432/${DB_NAME}?sslmode=disable\" ${MIGRATION_COMMAND}"
+    networks:
+      - default
+
+  prometheus:
+    container_name: ${COMPOSE_PROJECT_NAME}-prometheus
+    image: prom/prometheus:v2.37.9
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+
+  grafana:
+    container_name: ${COMPOSE_PROJECT_NAME}-grafana
+    image: grafana/grafana-oss:10.0.3
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+  jaeger:
+    container_name: ${COMPOSE_PROJECT_NAME}-jaeger
+    image: jaegertracing/all-in-one:1.48
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp" # jaeger-client
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686" # web
+      - "14268:14268"
+      - "9411:9411"
+

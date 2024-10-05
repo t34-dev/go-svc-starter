@@ -3,7 +3,6 @@
 .bin
 .env
 /dist
-/docs
 /gen
 /logs
 .vercel
@@ -12,10 +11,12 @@ debug.log
 .PID
 
 .vscode
+.gitlab-secrets
 
 node_modules/
 /.gradle/
 
+devops
 .devops/.temp/
 
 # proto
