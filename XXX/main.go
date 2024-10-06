@@ -400,39 +400,39 @@ func main() {
 	// Обновление токена
 	newRes, err := authService.RefreshToken(ctx, res.RefreshToken)
 	if err != nil {
-		log.Fatalf("8) Failed to refresh token: %v", err)
+		log.Fatalf("Failed to refresh token: %v", err)
 	}
-	fmt.Printf("Refreshed tokens: %+v\n", newRes)
+	fmt.Printf("8) Refreshed tokens: %+v\n", newRes)
 
 	// Получение активных сессий пользователя
 	sessions, err := authService.GetActiveSessions(ctx, userID)
 	if err != nil {
-		log.Fatalf("9) Failed to get active sessions: %v", err)
+		log.Fatalf("Failed to get active sessions: %v", err)
 	}
-	fmt.Printf("Active sessions: %+v\n", sessions)
+	fmt.Printf("9) Active sessions: %+v\n", sessions)
 
 	// Отзыв сессии
-	if len(sessions) > 0 {
-		err = authService.RevokeSession(ctx, sessions[0].ID)
-		if err != nil {
-			log.Fatalf("Failed to revoke session: %v", err)
-		}
-		fmt.Printf("10) Revoked session %s\n", sessions[0].ID)
-	}
-
-	// Выход пользователя
-	err = authService.Logout(ctx, newRes.Token)
-	if err != nil {
-		log.Fatalf("Failed to logout: %v", err)
-	}
-	fmt.Println("11) Logout successful")
-
-	// Удаление роли
-	err = authService.DeleteRole(ctx, newRoleID)
-	if err != nil {
-		log.Fatalf("Failed to delete role: %v", err)
-	}
-	fmt.Printf("12) Deleted role %d\n", newRoleID)
+	//if len(sessions) > 0 {
+	//	err = authService.RevokeSession(ctx, sessions[0].ID)
+	//	if err != nil {
+	//		log.Fatalf("Failed to revoke session: %v", err)
+	//	}
+	//	fmt.Printf("10) Revoked session %s\n", sessions[0].ID)
+	//}
+	//
+	//// Выход пользователя
+	//err = authService.Logout(ctx, newRes.Token)
+	//if err != nil {
+	//	log.Fatalf("Failed to logout: %v", err)
+	//}
+	//fmt.Println("11) Logout successful")
+	//
+	//// Удаление роли
+	//err = authService.DeleteRole(ctx, newRoleID)
+	//if err != nil {
+	//	log.Fatalf("Failed to delete role: %v", err)
+	//}
+	//fmt.Printf("12) Deleted role %d\n", newRoleID)
 
 	// Запуск очистки неактивных сессий в фоновом режиме
 	go func() {

@@ -18,7 +18,6 @@ const (
 	userIDColumn     = "user_id"
 	deviceKeyColumn  = "device_key"
 	deviceNameColumn = "device_name"
-	lastUsedColumn   = "last_used"
 	expiresAtColumn  = "expires_at"
 	createdAtColumn  = "created_at"
 	updatedAtColumn  = "updated_at"
@@ -41,8 +40,8 @@ func New(db db.Client) repository.SessionRepository {
 func (r sessionRepository) CreateSession(ctx context.Context, userID uuid.UUID, deviceKey, deviceName string) (uuid.UUID, error) {
 	sessionID := uuid.New()
 	query, args, err := r.builder.Insert(sessionTable).
-		Columns(idColumn, userIDColumn, deviceKeyColumn, deviceNameColumn, lastUsedColumn, expiresAtColumn, createdAtColumn, updatedAtColumn).
-		Values(sessionID, userID, deviceKey, deviceName, time.Now(), time.Now().Add(24*time.Hour), time.Now(), time.Now()).
+		Columns(idColumn, userIDColumn, deviceKeyColumn, deviceNameColumn, expiresAtColumn, createdAtColumn, updatedAtColumn).
+		Values(sessionID, userID, deviceKey, deviceName, time.Now().Add(24*time.Hour), time.Now(), time.Now()).
 		ToSql()
 	if err != nil {
 		return uuid.Nil, err
@@ -63,11 +62,10 @@ func (r sessionRepository) CreateSession(ctx context.Context, userID uuid.UUID, 
 func (r sessionRepository) UpsertSession(ctx context.Context, userID uuid.UUID, deviceKey, deviceName string) (uuid.UUID, error) {
 	sessionID := uuid.New()
 	query, args, err := r.builder.Insert(sessionTable).
-		Columns(idColumn, userIDColumn, deviceKeyColumn, deviceNameColumn, lastUsedColumn, expiresAtColumn, createdAtColumn, updatedAtColumn).
-		Values(sessionID, userID, deviceKey, deviceName, time.Now(), time.Now().Add(24*time.Hour), time.Now(), time.Now()).
+		Columns(idColumn, userIDColumn, deviceKeyColumn, deviceNameColumn, expiresAtColumn, createdAtColumn, updatedAtColumn).
+		Values(sessionID, userID, deviceKey, deviceName, time.Now().Add(24*time.Hour), time.Now(), time.Now()).
 		Suffix("ON CONFLICT (user_id, device_key) DO UPDATE SET " +
 			deviceNameColumn + " = EXCLUDED." + deviceNameColumn + ", " +
-			lastUsedColumn + " = EXCLUDED." + lastUsedColumn + ", " +
 			expiresAtColumn + " = EXCLUDED." + expiresAtColumn + ", " +
 			updatedAtColumn + " = EXCLUDED." + updatedAtColumn + " RETURNING " + idColumn).
 		ToSql()
@@ -105,7 +103,7 @@ func (r sessionRepository) DeleteSession(ctx context.Context, sessionID uuid.UUI
 func (r sessionRepository) GetSessionByID(ctx context.Context, sessionID uuid.UUID) (model.Session, error) {
 	query, args, err := r.builder.Select(
 		idColumn, userIDColumn, deviceKeyColumn, deviceNameColumn,
-		lastUsedColumn, expiresAtColumn, createdAtColumn, updatedAtColumn,
+		expiresAtColumn, createdAtColumn, updatedAtColumn,
 	).From(sessionTable).
 		Where(sq.Eq{idColumn: sessionID}).
 		Limit(1).
@@ -122,14 +120,13 @@ func (r sessionRepository) GetSessionByID(ctx context.Context, sessionID uuid.UU
 	var session model.Session
 	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(
 		&session.ID, &session.UserID, &session.DeviceKey, &session.DeviceName,
-		&session.LastUsed, &session.ExpiresAt, &session.CreatedAt, &session.UpdatedAt,
+		&session.ExpiresAt, &session.CreatedAt, &session.UpdatedAt,
 	)
 	return session, err
 }
 
 func (r sessionRepository) UpdateSessionLastUsed(ctx context.Context, sessionID uuid.UUID) error {
 	query, args, err := r.builder.Update(sessionTable).
-		Set(lastUsedColumn, time.Now()).
 		Set(updatedAtColumn, time.Now()).
 		Where(sq.Eq{idColumn: sessionID}).
 		ToSql()
@@ -149,7 +146,7 @@ func (r sessionRepository) UpdateSessionLastUsed(ctx context.Context, sessionID 
 func (r sessionRepository) GetActiveSessions(ctx context.Context, userID uuid.UUID) ([]model.Session, error) {
 	query, args, err := r.builder.Select(
 		idColumn, userIDColumn, deviceKeyColumn, deviceNameColumn,
-		lastUsedColumn, expiresAtColumn, createdAtColumn, updatedAtColumn,
+		expiresAtColumn, createdAtColumn, updatedAtColumn,
 	).From(sessionTable).
 		Where(sq.And{
 			sq.Eq{userIDColumn: userID},
@@ -176,7 +173,7 @@ func (r sessionRepository) GetActiveSessions(ctx context.Context, userID uuid.UU
 		var session model.Session
 		err := rows.Scan(
 			&session.ID, &session.UserID, &session.DeviceKey, &session.DeviceName,
-			&session.LastUsed, &session.ExpiresAt, &session.CreatedAt, &session.UpdatedAt,
+			&session.ExpiresAt, &session.CreatedAt, &session.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan session: %v", err)
@@ -194,7 +191,7 @@ func (r sessionRepository) GetCurrentSession(ctx context.Context, userID uuid.UU
 			sq.Eq{userIDColumn: userID},
 			sq.Gt{expiresAtColumn: time.Now()},
 		}).
-		OrderBy(lastUsedColumn + " DESC").
+		OrderBy(updatedAtColumn + " DESC").
 		Limit(1).
 		ToSql()
 	if err != nil {

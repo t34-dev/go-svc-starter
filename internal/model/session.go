@@ -10,7 +10,6 @@ type Session struct {
 	UserID       uuid.UUID `json:"user_id"`
 	DeviceKey    string    `json:"device_key"`
 	DeviceName   string    `json:"device_name"`
-	LastUsed     time.Time `json:"last_used"`
 	RefreshToken string    `json:"refresh_token"`
 	ExpiresAt    time.Time `json:"expires_at"`
 	CreatedAt    time.Time `json:"created_at"`

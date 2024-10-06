@@ -19,7 +19,6 @@ CREATE TABLE sessions (
                           user_id       UUID REFERENCES users (id) ON DELETE CASCADE,
                           device_key    VARCHAR(255)             NOT NULL,
                           device_name   VARCHAR(255)             NOT NULL,
-                          last_used     TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                           expires_at    TIMESTAMP WITH TIME ZONE NOT NULL,
                           created_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
                           updated_at    TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -56,11 +55,13 @@ RETURN NEW;
 END;
 $$ language 'plpgsql';
 
+-- Add trigger for users table
 CREATE TRIGGER update_user_modtime
     BEFORE UPDATE ON users
     FOR EACH ROW
     EXECUTE FUNCTION update_modified_column();
 
+-- Add trigger for sessions table
 CREATE TRIGGER update_session_modtime
     BEFORE UPDATE ON sessions
     FOR EACH ROW
