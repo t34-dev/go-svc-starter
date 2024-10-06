@@ -2,13 +2,13 @@ package device_repository
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"github.com/t34-dev/go-svc-starter/internal/model"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
+	"github.com/t34-dev/go-utils/pkg/db"
 )
 
 const (
@@ -27,11 +27,11 @@ const (
 var _ repository.DeviceRepository = (*deviceRepository)(nil)
 
 type deviceRepository struct {
-	db      *sql.DB
+	db      db.Client
 	builder sq.StatementBuilderType
 }
 
-func New(db *sql.DB) repository.DeviceRepository {
+func New(db db.Client) repository.DeviceRepository {
 	return &deviceRepository{
 		db:      db,
 		builder: sq.StatementBuilder.PlaceholderFormat(sq.Dollar),
@@ -39,16 +39,25 @@ func New(db *sql.DB) repository.DeviceRepository {
 }
 
 func (r deviceRepository) CreateDevice(ctx context.Context, userID int64, deviceKey, deviceName, refreshToken string) error {
-	_, err := r.builder.Insert(deviceTable).
+	query, args, err := r.builder.Insert(deviceTable).
 		Columns(deviceUserIDColumn, deviceKeyColumn, deviceNameColumn, deviceLastUsedColumn, deviceRefreshTokenColumn, deviceExpiresAtColumn, deviceCreatedAtColumn, deviceUpdatedAtColumn).
 		Values(userID, deviceKey, deviceName, time.Now(), refreshToken, time.Now().Add(24*time.Hour), time.Now(), time.Now()).
-		RunWith(r.db).
-		Exec()
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.CreateDevice",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	return err
 }
 
 func (r deviceRepository) UpsertDevice(ctx context.Context, userID int64, deviceKey, deviceName, refreshToken string) error {
-	_, err := r.builder.Insert(deviceTable).
+	query, args, err := r.builder.Insert(deviceTable).
 		Columns(deviceUserIDColumn, deviceKeyColumn, deviceNameColumn, deviceLastUsedColumn, deviceRefreshTokenColumn, deviceExpiresAtColumn, deviceCreatedAtColumn, deviceUpdatedAtColumn).
 		Values(userID, deviceKey, deviceName, time.Now(), refreshToken, time.Now().Add(24*time.Hour), time.Now(), time.Now()).
 		Suffix("ON CONFLICT (user_id, device_key) DO UPDATE SET " +
@@ -57,46 +66,81 @@ func (r deviceRepository) UpsertDevice(ctx context.Context, userID int64, device
 			deviceRefreshTokenColumn + " = EXCLUDED." + deviceRefreshTokenColumn + ", " +
 			deviceExpiresAtColumn + " = EXCLUDED." + deviceExpiresAtColumn + ", " +
 			deviceUpdatedAtColumn + " = EXCLUDED." + deviceUpdatedAtColumn).
-		RunWith(r.db).
-		Exec()
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.UpsertDevice",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	return err
 }
 
 func (r deviceRepository) DeleteDevice(ctx context.Context, userID int64, refreshToken string) error {
-	_, err := r.builder.Delete(deviceTable).
+	query, args, err := r.builder.Delete(deviceTable).
 		Where(sq.Eq{deviceUserIDColumn: userID, deviceRefreshTokenColumn: refreshToken}).
-		RunWith(r.db).
-		Exec()
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.DeleteDevice",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	return err
 }
 
 func (r deviceRepository) GetDeviceByRefreshToken(ctx context.Context, refreshToken, deviceKey string) (model.Device, error) {
-	var device model.Device
-	err := r.builder.Select(deviceUserIDColumn, deviceExpiresAtColumn).
+	query, args, err := r.builder.Select(deviceUserIDColumn, deviceExpiresAtColumn).
 		From(deviceTable).
 		Where(sq.Eq{deviceRefreshTokenColumn: refreshToken, deviceKeyColumn: deviceKey}).
 		Limit(1).
-		RunWith(r.db).
-		QueryRow().
-		Scan(&device.UserID, &device.ExpiresAt)
+		ToSql()
+	if err != nil {
+		return model.Device{}, err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.GetDeviceByRefreshToken",
+		QueryRaw: query,
+	}
+
+	var device model.Device
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&device.UserID, &device.ExpiresAt)
 	return device, err
 }
 
 func (r deviceRepository) UpdateDevice(ctx context.Context, userID int64, deviceKey, deviceName, refreshToken string) error {
-	_, err := r.builder.Update(deviceTable).
+	query, args, err := r.builder.Update(deviceTable).
 		Set(deviceNameColumn, deviceName).
 		Set(deviceLastUsedColumn, time.Now()).
 		Set(deviceRefreshTokenColumn, refreshToken).
 		Set(deviceExpiresAtColumn, time.Now().Add(24*time.Hour)).
 		Set(deviceUpdatedAtColumn, time.Now()).
 		Where(sq.Eq{deviceUserIDColumn: userID, deviceKeyColumn: deviceKey}).
-		RunWith(r.db).
-		Exec()
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.UpdateDevice",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	return err
 }
 
 func (r deviceRepository) GetActiveDevices(ctx context.Context, userID int64) ([]model.Device, error) {
-	rows, err := r.builder.Select(
+	query, args, err := r.builder.Select(
 		deviceIDColumn, deviceUserIDColumn, deviceKeyColumn, deviceNameColumn,
 		deviceLastUsedColumn, deviceRefreshTokenColumn, deviceExpiresAtColumn,
 		deviceCreatedAtColumn, deviceUpdatedAtColumn,
@@ -105,9 +149,17 @@ func (r deviceRepository) GetActiveDevices(ctx context.Context, userID int64) ([
 			sq.Eq{deviceUserIDColumn: userID},
 			sq.Gt{deviceExpiresAtColumn: time.Now()},
 		}).
-		RunWith(r.db).
-		Query()
+		ToSql()
+	if err != nil {
+		return nil, err
+	}
 
+	q := db.Query{
+		Name:     "device_repository.GetActiveDevices",
+		QueryRaw: query,
+	}
+
+	rows, err := r.db.DB().QueryContext(ctx, q, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -131,8 +183,7 @@ func (r deviceRepository) GetActiveDevices(ctx context.Context, userID int64) ([
 }
 
 func (r deviceRepository) GetCurrentDevice(ctx context.Context, userID int64) (int64, error) {
-	var id int64
-	err := r.builder.Select(deviceIDColumn).
+	query, args, err := r.builder.Select(deviceIDColumn).
 		From(deviceTable).
 		Where(sq.And{
 			sq.Eq{deviceUserIDColumn: userID},
@@ -140,16 +191,34 @@ func (r deviceRepository) GetCurrentDevice(ctx context.Context, userID int64) (i
 		}).
 		OrderBy(deviceLastUsedColumn + " DESC").
 		Limit(1).
-		RunWith(r.db).
-		QueryRow().
-		Scan(&id)
+		ToSql()
+	if err != nil {
+		return 0, err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.GetCurrentDevice",
+		QueryRaw: query,
+	}
+
+	var id int64
+	err = r.db.DB().QueryRowContext(ctx, q, args...).Scan(&id)
 	return id, err
 }
 
 func (r deviceRepository) CleanupInactiveSessions(ctx context.Context) error {
-	_, err := r.builder.Delete(deviceTable).
+	query, args, err := r.builder.Delete(deviceTable).
 		Where(sq.Lt{deviceExpiresAtColumn: time.Now()}).
-		RunWith(r.db).
-		Exec()
+		ToSql()
+	if err != nil {
+		return err
+	}
+
+	q := db.Query{
+		Name:     "device_repository.CleanupInactiveSessions",
+		QueryRaw: query,
+	}
+
+	_, err = r.db.DB().ExecContext(ctx, q, args...)
 	return err
 }

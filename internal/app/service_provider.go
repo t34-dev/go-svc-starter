@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/grpc-ecosystem/grpc-opentracing/go/otgrpc"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -16,7 +15,9 @@ import (
 	othergrpcservice_impl "github.com/t34-dev/go-svc-starter/internal/client/other_grpc_service/impl"
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
-	pgRepos "github.com/t34-dev/go-svc-starter/internal/repository/pg"
+	commonRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/common"
+	deviceRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/device"
+	userRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/user"
 	"github.com/t34-dev/go-svc-starter/internal/service"
 	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
 	authService "github.com/t34-dev/go-svc-starter/internal/service/auth"
@@ -36,6 +37,7 @@ import (
 )
 
 type serviceProvider struct {
+	dbPool    *pgxpool.Pool
 	dbClient  db.Client
 	txManager db.TxManager
 	repos     *repository.Repository
@@ -52,48 +54,51 @@ func newServiceProvider() *serviceProvider {
 	return &serviceProvider{}
 }
 
+func (s *serviceProvider) DBPool(ctx context.Context) *pgxpool.Pool {
+	if s.dbPool == nil {
+		dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+			config.Pg().User(),
+			config.Pg().Password(),
+			config.Pg().Host(),
+			config.Pg().Port(),
+			config.Pg().DBName(),
+			config.Pg().SSLMode(),
+		)
+		// Create configuration for the connection pool
+		dbConfig, err := pgxpool.ParseConfig(dsn)
+		if err != nil {
+			logs.Fatal(fmt.Sprintf("Error parsing configuration: %v", err))
+		}
+
+		// Configure pool parameters
+		dbConfig.MinConns = config.Pg().MinConns()
+		dbConfig.MaxConns = config.Pg().MaxConns()
+
+		// Create connection pool
+		pool, err := pgxpool.ConnectConfig(ctx, dbConfig)
+		if err != nil {
+			logs.Fatal(fmt.Sprintf("failed to connect to database: %v", err))
+		}
+		closer.Add(func() error {
+			pool.Close()
+			return nil
+		})
+
+		// Check connection
+		if err := pool.Ping(ctx); err != nil {
+			logs.Fatal(fmt.Sprintf("failed to ping database: %v", err))
+		}
+		return pool
+	}
+	return s.dbPool
+}
 func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	if s.dbClient == nil {
-		connector := func(ctx context.Context) (*pgxpool.Pool, error) {
-			dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
-				config.Pg().User(),
-				config.Pg().Password(),
-				config.Pg().Host(),
-				config.Pg().Port(),
-				config.Pg().DBName(),
-				config.Pg().SSLMode(),
-			)
-			// Create configuration for the connection pool
-			dbConfig, err := pgxpool.ParseConfig(dsn)
-			if err != nil {
-				logs.Fatal(fmt.Sprintf("Error parsing configuration: %v\n", err))
-			}
-
-			// Configure pool parameters
-			dbConfig.MinConns = config.Pg().MinConns()
-			dbConfig.MaxConns = config.Pg().MaxConns()
-
-			// Create connection pool
-			pool, err := pgxpool.ConnectConfig(ctx, dbConfig)
-			if err != nil {
-				return nil, errors.New(fmt.Sprintf("Failed to connect to database: %v\n", err))
-			}
-			closer.Add(func() error {
-				pool.Close()
-				return nil
-			})
-
-			// Check connection
-			if err := pool.Ping(ctx); err != nil {
-				return nil, errors.New(fmt.Sprintf("Failed to ping database: %v\n", err))
-			}
-			return pool, nil
-		}
 		customLogger := pg.LogFunc(func(ctx context.Context, q db.Query, args ...interface{}) {
 			prettyQuery := prettier.Pretty(q.QueryRaw, prettier.PlaceholderDollar, args...)
 			logs.Info(fmt.Sprintf("%v", ctx), zap.String("SQL", q.Name), zap.String("query", prettyQuery))
 		})
-		cl, err := pg.New(ctx, connector, &customLogger)
+		cl, err := pg.New(s.DBPool(ctx), &customLogger)
 		if err != nil {
 			logs.Fatal("failed to create db client", zap.Error(err))
 		}
@@ -119,7 +124,12 @@ func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 }
 func (s *serviceProvider) Repos(ctx context.Context) *repository.Repository {
 	if s.repos == nil {
-		s.repos = pgRepos.New(s.DBClient(ctx))
+		dbClient := s.DBClient(ctx)
+		s.repos = &repository.Repository{
+			Common: commonRepository.New(dbClient),
+			User:   userRepository.New(dbClient),
+			Device: deviceRepository.New(dbClient),
+		}
 	}
 	return s.repos
 }

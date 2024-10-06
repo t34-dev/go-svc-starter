@@ -8,10 +8,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/brianvoe/gofakeit/v6"
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/t34-dev/go-svc-starter/internal/model"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	device_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/device"
 	user_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/user"
+	"github.com/t34-dev/go-utils/pkg/db"
+	"github.com/t34-dev/go-utils/pkg/db/pg"
+	"github.com/t34-dev/go-utils/pkg/db/transaction"
 	"log"
 	"time"
 
@@ -22,24 +26,29 @@ import (
 )
 
 type AuthService struct {
-	db      *sql.DB
-	builder sq.StatementBuilderType
-	repos   repository.Repository
+	txManager db.TxManager
+	builder   sq.StatementBuilderType
+	repos     repository.Repository
 }
 
 var jwtKey = []byte("your-secret-key") // В реальном приложении используйте безопасный метод хранения ключа
 
-func NewAuthService(db *sql.DB) *AuthService {
+func NewAuthService(pool *pgxpool.Pool) *AuthService {
 	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	dbClient, err := pg.New(pool, nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	txManager := transaction.NewTransactionManager(dbClient.DB())
 	repos := repository.Repository{
 		Common: nil,
-		User:   user_repository.New(db),
-		Device: device_repository.New(db),
+		User:   user_repository.New(dbClient),
+		Device: device_repository.New(dbClient),
 	}
 	return &AuthService{
-		db:      db,
-		builder: builder,
-		repos:   repos,
+		txManager: txManager,
+		builder:   builder,
+		repos:     repos,
 	}
 }
 
@@ -60,40 +69,40 @@ func (s *AuthService) Registration(ctx context.Context, email, username, passwor
 		return nil, err
 	}
 
-	// Начинаем транзакцию
-	tx, err := s.db.Begin()
+	var authTokens *model.AuthTokens
+
+	err = s.txManager.ReadCommitted(ctx, func(ctx context.Context) error {
+		// Вставляем нового пользователя
+		userID, errTx := s.repos.User.CreateUser(ctx, email, username, string(hashedPassword))
+		if errTx != nil {
+			return errTx
+		}
+
+		// Генерируем токены
+		token, refreshToken, errTx := generateTokens(userID)
+		if errTx != nil {
+			return errTx
+		}
+
+		// Вставляем информацию об устройстве (сессии)
+		errTx = s.repos.Device.CreateDevice(ctx, userID, deviceKey, deviceName, refreshToken)
+		if errTx != nil {
+			return errTx
+		}
+
+		authTokens = &model.AuthTokens{
+			Token:        token,
+			RefreshToken: refreshToken,
+		}
+
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
 
-	// Вставляем нового пользователя
-	userID, err := s.repos.User.CreateUser(ctx, email, username, string(hashedPassword))
-	if err != nil {
-		return nil, err
-	}
-
-	// Генерируем токены
-	token, refreshToken, err := generateTokens(userID)
-	if err != nil {
-		return nil, err
-	}
-
-	// Вставляем информацию об устройстве (сессии)
-	err = s.repos.Device.CreateDevice(ctx, userID, deviceKey, deviceName, refreshToken)
-	if err != nil {
-		return nil, err
-	}
-
-	// Подтверждаем транзакцию
-	if err = tx.Commit(); err != nil {
-		return nil, err
-	}
-
-	return &model.AuthTokens{
-		Token:        token,
-		RefreshToken: refreshToken,
-	}, nil
+	return authTokens, nil
 }
 
 func (s *AuthService) Login(ctx context.Context, login, password, deviceKey, deviceName string) (*model.AuthTokens, error) {
@@ -264,20 +273,23 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 }
 
 func main() {
-	// Подключение к базе данных
-	db, err := sql.Open("postgres", "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable")
+	ctx := context.Background()
+	// Строка подключения к базе данных
+	connString := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
+
+	// Создаем пул соединений
+	pool, err := pgxpool.Connect(context.Background(), connString)
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	defer db.Close()
+	defer pool.Close()
 
 	// Проверка соединения
-	if err = db.Ping(); err != nil {
+	if err = pool.Ping(ctx); err != nil {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
-	ctx := context.Background()
-	authService := NewAuthService(db)
+	authService := NewAuthService(pool)
 
 	// Пример использования
 	email := gofakeit.Email()

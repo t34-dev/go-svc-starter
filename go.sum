@@ -244,6 +244,8 @@ github.com/t34-dev/go-grpc-pool v1.0.5 h1:1cyeooY/K2tc/fhjNFnX26M5F1Nqh1UFH8T239
 github.com/t34-dev/go-grpc-pool v1.0.5/go.mod h1:4Qdb9W1jqV1WgRgKdZz7mG6Z2NfOfL1jxAAfYemu9rY=
 github.com/t34-dev/go-utils v0.0.5 h1:MdE9AJb0AvHPTX73rc4XaFOTNwy+JBSvOEb9mld0fbM=
 github.com/t34-dev/go-utils v0.0.5/go.mod h1:PhnhvdenjnRA5lChvwJB9hFWLSTaHxQv/y3bpzK4JEY=
+github.com/t34-dev/go-utils v0.0.6 h1:05/7D27LsTuy/hbpX8yNIZry/zzAsRTX0RIiZJ2eSH4=
+github.com/t34-dev/go-utils v0.0.6/go.mod h1:PhnhvdenjnRA5lChvwJB9hFWLSTaHxQv/y3bpzK4JEY=
 github.com/uber/jaeger-client-go v2.30.0+incompatible h1:D6wyKGCecFaSRUpo8lCVbaOOb6ThwMmTEbhRwtKR97o=
 github.com/uber/jaeger-client-go v2.30.0+incompatible/go.mod h1:WVhlPFC8FDjOFMMWRy2pZqQJSXxYSwNYOkTr/Z6d3Kk=
 github.com/uber/jaeger-lib v2.4.1+incompatible h1:td4jdvLcExb4cBISKIpHuGoVXh+dVKhn2Um6rjCsSsg=

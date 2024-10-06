@@ -22,7 +22,7 @@ require (
 	github.com/prometheus/client_golang v1.20.4
 	github.com/stretchr/testify v1.9.0
 	github.com/t34-dev/go-grpc-pool v1.0.5
-	github.com/t34-dev/go-utils v0.0.5
+	github.com/t34-dev/go-utils v0.0.6
 	github.com/uber/jaeger-client-go v2.30.0+incompatible
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.24.0
