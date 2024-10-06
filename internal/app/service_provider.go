@@ -16,7 +16,8 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	commonRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/common"
-	deviceRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/sessions"
+	role_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/role"
+	deviceRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/session"
 	userRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/user"
 	"github.com/t34-dev/go-svc-starter/internal/service"
 	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
@@ -129,9 +130,10 @@ func (s *serviceProvider) Repos(ctx context.Context) *repository.Repository {
 	if s.repos == nil {
 		dbClient := s.DBClient(ctx)
 		s.repos = &repository.Repository{
-			Common: commonRepository.New(dbClient),
-			User:   userRepository.New(dbClient),
-			Device: deviceRepository.New(dbClient),
+			Common:  commonRepository.New(dbClient),
+			User:    userRepository.New(dbClient),
+			Session: deviceRepository.New(dbClient),
+			Role:    role_repository.New(dbClient),
 		}
 	}
 	return s.repos

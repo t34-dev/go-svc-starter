@@ -2,52 +2,46 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
-	"database/sql"
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/brianvoe/gofakeit/v6"
+	"log"
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/t34-dev/go-svc-starter/internal/model"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
-	session_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/sessions"
+	role_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/role"
+	session_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/session"
 	user_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/user"
 	"github.com/t34-dev/go-utils/pkg/db"
 	"github.com/t34-dev/go-utils/pkg/db/pg"
 	"github.com/t34-dev/go-utils/pkg/db/transaction"
-	"log"
-	"time"
 
-	sq "github.com/Masterminds/squirrel"
 	"github.com/dgrijalva/jwt-go"
-	_ "github.com/lib/pq"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthService struct {
 	txManager db.TxManager
-	builder   sq.StatementBuilderType
 	repos     repository.Repository
 }
 
 var jwtKey = []byte("your-secret-key") // В реальном приложении используйте безопасный метод хранения ключа
 
 func NewAuthService(pool *pgxpool.Pool) *AuthService {
-	builder := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	dbClient, err := pg.New(pool, nil)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	txManager := transaction.NewTransactionManager(dbClient.DB())
 	repos := repository.Repository{
-		Common:  nil,
 		User:    user_repository.New(dbClient),
 		Session: session_repository.New(dbClient),
+		Role:    role_repository.New(dbClient),
 	}
 	return &AuthService{
 		txManager: txManager,
-		builder:   builder,
 		repos:     repos,
 	}
 }
@@ -78,14 +72,14 @@ func (s *AuthService) Registration(ctx context.Context, email, username, passwor
 			return errTx
 		}
 
-		// Генерируем токены
-		token, refreshToken, errTx := generateTokens(userID)
+		// Создаем сессию
+		sessionID, errTx := s.repos.Session.CreateSession(ctx, userID, deviceKey, deviceName)
 		if errTx != nil {
 			return errTx
 		}
 
-		// Вставляем информацию об устройстве (сессии)
-		errTx = s.repos.Session.CreateSession(ctx, userID, deviceKey, deviceName, refreshToken)
+		// Генерируем токены
+		token, refreshToken, errTx := generateTokens(userID, sessionID)
 		if errTx != nil {
 			return errTx
 		}
@@ -117,14 +111,14 @@ func (s *AuthService) Login(ctx context.Context, login, password, deviceKey, dev
 		return nil, errors.New("invalid password")
 	}
 
-	// Генерируем новые токены
-	token, refreshToken, err := generateTokens(user.ID)
+	// Создаем или обновляем сессию
+	sessionID, err := s.repos.Session.UpsertSession(ctx, user.ID, deviceKey, deviceName)
 	if err != nil {
 		return nil, err
 	}
 
-	// Обновляем или создаем устройство (сессию)
-	err = s.repos.Session.UpsertSession(ctx, user.ID, deviceKey, deviceName, refreshToken)
+	// Генерируем новые токены
+	token, refreshToken, err := generateTokens(user.ID, sessionID)
 	if err != nil {
 		return nil, err
 	}
@@ -141,63 +135,78 @@ func (s *AuthService) Logout(ctx context.Context, token string) error {
 		return err
 	}
 
-	userID := int64(claims["user_id"].(float64))
-	refreshToken := claims["refresh_token"].(string)
+	sessionID, err := uuid.Parse(claims["session_id"].(string))
+	if err != nil {
+		return err
+	}
 
-	return s.repos.Session.DeleteSession(ctx, userID, refreshToken)
+	return s.repos.Session.DeleteSession(ctx, sessionID)
 }
 
-func (s *AuthService) GetUserInfo(ctx context.Context, userID int64) (*model.UserInfo, error) {
+func (s *AuthService) GetUserInfo(ctx context.Context, userID uuid.UUID) (*model.UserInfo, error) {
 	user, err := s.repos.User.GetUserInfo(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user info: %v", err)
 	}
 
-	currentSessionID, err := s.repos.Session.GetCurrentSession(ctx, userID)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, fmt.Errorf("failed to get current device: %v", err)
-	}
-	user.CurrentSessionID = currentSessionID
-
-	devices, err := s.repos.Session.GetActiveSessions(ctx, userID)
+	sessions, err := s.repos.Session.GetActiveSessions(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user devices: %v", err)
+		return nil, fmt.Errorf("failed to get user sessions: %v", err)
 	}
+
+	roles, err := s.repos.Role.GetUserRoles(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user roles: %v", err)
+	}
+
+	user.Roles = roles
 
 	return &model.UserInfo{
 		User:     user,
-		Sessions: devices,
+		Sessions: sessions,
 	}, nil
 }
 
-func (s *AuthService) GetActiveSessions(ctx context.Context, userID int64) ([]model.Session, error) {
+func (s *AuthService) GetActiveSessions(ctx context.Context, userID uuid.UUID) ([]model.Session, error) {
 	return s.repos.Session.GetActiveSessions(ctx, userID)
 }
-func (s *AuthService) RefreshToken(ctx context.Context, refreshToken, deviceKey, deviceName string) (*model.AuthTokens, error) {
-	// Находим устройство (сессию)
-	device, err := s.repos.Session.GetSessionByRefreshToken(ctx, refreshToken, deviceKey)
+
+func (s *AuthService) RefreshToken(ctx context.Context, refreshToken string) (*model.AuthTokens, error) {
+	// Парсим refresh token
+	claims, err := validateToken(refreshToken)
 	if err != nil {
-		return nil, errors.New("invalid refresh token or device")
+		return nil, errors.New("invalid refresh token")
 	}
 
-	if device.ExpiresAt.Before(time.Now()) {
-		return nil, errors.New("refresh token expired")
+	userID, err := uuid.Parse(claims["user_id"].(string))
+	if err != nil {
+		return nil, err
 	}
-
-	// Генерируем новые токены
-	token, newRefreshToken, err := generateTokens(device.UserID)
+	sessionID, err := uuid.Parse(claims["session_id"].(string))
 	if err != nil {
 		return nil, err
 	}
 
-	// Обновляем устройство (сессию)
-	err = s.repos.Session.UpdateSession(ctx, device.UserID, deviceKey, deviceName, newRefreshToken)
+	// Проверяем существование сессии в базе данных
+	session, err := s.repos.Session.GetSessionByID(ctx, sessionID)
+	if err != nil || session.UserID != userID {
+		return nil, errors.New("invalid session")
+	}
+
+	// Обновляем время последнего использования сессии
+	err = s.repos.Session.UpdateSessionLastUsed(ctx, sessionID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Генерируем новые токены
+	newAccessToken, newRefreshToken, err := generateTokens(userID, sessionID)
 	if err != nil {
 		return nil, err
 	}
 
 	return &model.AuthTokens{
-		Token:        token,
+		Token:        newAccessToken,
 		RefreshToken: newRefreshToken,
 	}, nil
 }
@@ -208,22 +217,54 @@ func (s *AuthService) ValidateToken(ctx context.Context, token string) (*model.V
 		return &model.ValidateTokenResponse{Valid: false}, nil
 	}
 
-	userID := int64(claims["user_id"].(float64))
-	refreshToken := claims["refresh_token"].(string)
+	userID, err := uuid.Parse(claims["user_id"].(string))
+	if err != nil {
+		return &model.ValidateTokenResponse{Valid: false}, nil
+	}
 
-	device, err := s.repos.Session.GetSessionByRefreshToken(ctx, refreshToken, "")
-	if err != nil || device.UserID != userID {
+	sessionID, err := uuid.Parse(claims["session_id"].(string))
+	if err != nil {
+		return &model.ValidateTokenResponse{Valid: false}, nil
+	}
+
+	// Проверяем существование сессии в базе данных
+	session, err := s.repos.Session.GetSessionByID(ctx, sessionID)
+	if err != nil || session.UserID != userID {
 		return &model.ValidateTokenResponse{Valid: false}, nil
 	}
 
 	return &model.ValidateTokenResponse{
 		Valid:  true,
-		UserID: fmt.Sprintf("%v", userID),
+		UserID: userID.String(),
 	}, nil
 }
 
-func (s *AuthService) RevokeSession(ctx context.Context, userID int64, deviceID string) error {
-	return s.repos.Session.DeleteSession(ctx, userID, deviceID)
+func (s *AuthService) RevokeSession(ctx context.Context, sessionID uuid.UUID) error {
+	return s.repos.Session.DeleteSession(ctx, sessionID)
+}
+
+func (s *AuthService) GetAllRoles(ctx context.Context) ([]model.Role, error) {
+	return s.repos.Role.GetAllRoles(ctx)
+}
+
+func (s *AuthService) AssignRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error {
+	return s.repos.Role.AssignRoleToUser(ctx, userID, roleID)
+}
+
+func (s *AuthService) RemoveRoleFromUser(ctx context.Context, userID uuid.UUID, roleID int64) error {
+	return s.repos.Role.RemoveRoleFromUser(ctx, userID, roleID)
+}
+
+func (s *AuthService) CreateRole(ctx context.Context, roleName string) (int64, error) {
+	return s.repos.Role.CreateRole(ctx, roleName)
+}
+
+func (s *AuthService) DeleteRole(ctx context.Context, roleID int64) error {
+	return s.repos.Role.DeleteRole(ctx, roleID)
+}
+
+func (s *AuthService) UpdateRole(ctx context.Context, roleID int64, newRoleName string) error {
+	return s.repos.Role.UpdateRole(ctx, roleID, newRoleName)
 }
 
 func (s *AuthService) cleanupInactiveSessions(ctx context.Context) {
@@ -233,10 +274,12 @@ func (s *AuthService) cleanupInactiveSessions(ctx context.Context) {
 	}
 }
 
-func generateTokens(userID int64) (string, string, error) {
+func generateTokens(userID uuid.UUID, sessionID uuid.UUID) (string, string, error) {
+	// Access token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(5 * time.Minute).Unix(),
+		"user_id":    userID.String(),
+		"session_id": sessionID.String(),
+		"exp":        time.Now().Add(15 * time.Minute).Unix(),
 	})
 
 	tokenString, err := token.SignedString(jwtKey)
@@ -244,11 +287,17 @@ func generateTokens(userID int64) (string, string, error) {
 		return "", "", err
 	}
 
-	refreshToken := make([]byte, 32)
-	if _, err := rand.Read(refreshToken); err != nil {
+	// Refresh token
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"user_id":    userID.String(),
+		"session_id": sessionID.String(),
+		"exp":        time.Now().Add(30 * 24 * time.Hour).Unix(), // 30 дней
+	})
+
+	refreshTokenString, err := refreshToken.SignedString(jwtKey)
+	if err != nil {
 		return "", "", err
 	}
-	refreshTokenString := base64.URLEncoding.EncodeToString(refreshToken)
 
 	return tokenString, refreshTokenString, nil
 }
@@ -271,9 +320,9 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 
 	return nil, errors.New("invalid token")
 }
-
 func main() {
 	ctx := context.Background()
+
 	// Строка подключения к базе данных
 	connString := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"
 
@@ -292,57 +341,108 @@ func main() {
 	authService := NewAuthService(pool)
 
 	// Пример использования
-	email := gofakeit.Email()
-	login := gofakeit.Username()
-	password := gofakeit.Password(true, true, true, true, true, 10)
+	email := "test@example.com"
+	username := "testuser"
+	password := "testpassword"
 	deviceKey := "device_key"
-	userAgent := gofakeit.UserAgent()
+	userAgent := "Test User Agent"
 
-	res, err := authService.Registration(ctx, email, login, password, deviceKey, userAgent)
+	// Регистрация пользователя
+	res, err := authService.Registration(ctx, email, username, password, deviceKey, userAgent)
 	if err != nil {
-		log.Fatalf("Failed Registration: %v", err)
+		log.Printf("Failed Registration: %v", err)
 	}
-	fmt.Println(res)
+	fmt.Printf("1) Registration successful. Tokens: %+v\n", res)
 
+	// Логин пользователя
 	res, err = authService.Login(ctx, email, password, deviceKey, userAgent)
 	if err != nil {
-		log.Fatalf("Failed Login via EMAIL: %v", err)
+		log.Fatalf("Failed Login: %v", err)
 	}
-	fmt.Println(res)
+	fmt.Printf("2) Login successful. Tokens: %+v\n", res)
 
-	res, err = authService.Login(ctx, login, password, deviceKey, userAgent)
-	if err != nil {
-		log.Fatalf("Failed Login via EMAIL: %v", err)
-	}
-	fmt.Println(res)
-
-	// Пример использования GetUserInfo
-	claims, err := validateToken(res.Token)
+	// Валидация токена
+	validateRes, err := authService.ValidateToken(ctx, res.Token)
 	if err != nil {
 		log.Fatalf("Failed to validate token: %v", err)
 	}
-	userID := int64(claims["user_id"].(float64))
+	fmt.Printf("3) Token validation result: %+v\n", validateRes)
 
+	// Получение информации о пользователе
+	userID, _ := uuid.Parse(validateRes.UserID)
 	userInfo, err := authService.GetUserInfo(ctx, userID)
 	if err != nil {
 		log.Fatalf("Failed to get user info: %v", err)
 	}
-	fmt.Printf("User Info: %+v\n", userInfo)
+	fmt.Printf("4) User Info: %+v\n", userInfo)
 
-	// Вывод информации о активных устройствах
-	activeSessions, err := authService.GetActiveSessions(ctx, userID)
+	// Получение всех ролей
+	roles, err := authService.GetAllRoles(ctx)
 	if err != nil {
-		log.Fatalf("Failed to get active devices: %v", err)
+		log.Fatalf("Failed to get all roles: %v", err)
 	}
-	fmt.Printf("Active Sessions: %+v\n", activeSessions)
+	fmt.Printf("5) All roles: %+v\n", roles)
 
-	// Start a goroutine to clean up inactive sessions periodically
+	// Создание новой роли
+	newRoleID, err := authService.CreateRole(ctx, "NewRole")
+	if err != nil {
+		log.Fatalf("Failed to create new role: %v", err)
+	}
+	fmt.Printf("6) Created new role with ID: %d\n", newRoleID)
+
+	// Назначение роли пользователю
+	err = authService.AssignRoleToUser(ctx, userID, newRoleID)
+	if err != nil {
+		log.Fatalf("Failed to assign role to user: %v", err)
+	}
+	fmt.Printf("7) Assigned role %d to user %s\n", newRoleID, userID)
+
+	// Обновление токена
+	newRes, err := authService.RefreshToken(ctx, res.RefreshToken)
+	if err != nil {
+		log.Fatalf("8) Failed to refresh token: %v", err)
+	}
+	fmt.Printf("Refreshed tokens: %+v\n", newRes)
+
+	// Получение активных сессий пользователя
+	sessions, err := authService.GetActiveSessions(ctx, userID)
+	if err != nil {
+		log.Fatalf("9) Failed to get active sessions: %v", err)
+	}
+	fmt.Printf("Active sessions: %+v\n", sessions)
+
+	// Отзыв сессии
+	if len(sessions) > 0 {
+		err = authService.RevokeSession(ctx, sessions[0].ID)
+		if err != nil {
+			log.Fatalf("Failed to revoke session: %v", err)
+		}
+		fmt.Printf("10) Revoked session %s\n", sessions[0].ID)
+	}
+
+	// Выход пользователя
+	err = authService.Logout(ctx, newRes.Token)
+	if err != nil {
+		log.Fatalf("Failed to logout: %v", err)
+	}
+	fmt.Println("11) Logout successful")
+
+	// Удаление роли
+	err = authService.DeleteRole(ctx, newRoleID)
+	if err != nil {
+		log.Fatalf("Failed to delete role: %v", err)
+	}
+	fmt.Printf("12) Deleted role %d\n", newRoleID)
+
+	// Запуск очистки неактивных сессий в фоновом режиме
 	go func() {
 		for {
-			time.Sleep(24 * time.Hour) // Run once a day
+			time.Sleep(24 * time.Hour) // Запуск каждые 24 часа
 			authService.cleanupInactiveSessions(ctx)
 		}
 	}()
+
+	// Здесь можно добавить код для запуска HTTP-сервера или другой логики приложения
 
 	// Бесконечный цикл, чтобы программа не завершалась
 	select {}

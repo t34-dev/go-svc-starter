@@ -1,10 +1,13 @@
 package model
 
-import "time"
+import (
+	"github.com/google/uuid"
+	"time"
+)
 
 type Session struct {
-	ID           int64     `json:"id"`
-	UserID       int64     `json:"user_id"`
+	ID           uuid.UUID `json:"id"`
+	UserID       uuid.UUID `json:"user_id"`
 	DeviceKey    string    `json:"device_key"`
 	DeviceName   string    `json:"device_name"`
 	LastUsed     time.Time `json:"last_used"`

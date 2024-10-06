@@ -1,4 +1,11 @@
+DROP TRIGGER IF EXISTS update_session_modtime ON sessions;
+DROP TRIGGER IF EXISTS update_user_modtime ON users;
+DROP FUNCTION IF EXISTS update_modified_column();
+DROP INDEX IF EXISTS idx_sessions_user_id;
+DROP INDEX IF EXISTS idx_user_roles_role_id;
+DROP INDEX IF EXISTS idx_user_roles_user_id;
 DROP TABLE IF EXISTS user_roles;
-DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS roles;
+DROP TABLE IF EXISTS sessions;
 DROP TABLE IF EXISTS users;
+DROP EXTENSION IF EXISTS "uuid-ossp";
