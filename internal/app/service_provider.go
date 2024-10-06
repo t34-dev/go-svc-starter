@@ -16,7 +16,7 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/config"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
 	commonRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/common"
-	deviceRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/device"
+	deviceRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/sessions"
 	userRepository "github.com/t34-dev/go-svc-starter/internal/repository/pg/user"
 	"github.com/t34-dev/go-svc-starter/internal/service"
 	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
@@ -37,17 +37,20 @@ import (
 )
 
 type serviceProvider struct {
+	// grpc
+	grpcImpl *grpcImpl.GrpcImpl
+
+	// db
 	dbPool    *pgxpool.Pool
 	dbClient  db.Client
 	txManager db.TxManager
 	repos     *repository.Repository
-	service   *service.Service
 
-	// grpc
-	grpcImpl *grpcImpl.GrpcImpl
+	// service
+	service *service.Service
 
-	// grpc
-	otherGrpc othergrpcservice.OtherGRPCService
+	// grpc-clients
+	clientOtherGrpc othergrpcservice.OtherGRPCService
 }
 
 func newServiceProvider() *serviceProvider {
@@ -134,7 +137,7 @@ func (s *serviceProvider) Repos(ctx context.Context) *repository.Repository {
 	return s.repos
 }
 func (s *serviceProvider) OtherGrpc(_ context.Context) othergrpcservice.OtherGRPCService {
-	if s.otherGrpc == nil {
+	if s.clientOtherGrpc == nil {
 		creds, err := credentials.NewClientTLSFromFile("cert/service.pem", "")
 		if err != nil {
 			logs.Fatal("failed to load client TLS credentials:", zap.Error(err))
@@ -177,9 +180,9 @@ func (s *serviceProvider) OtherGrpc(_ context.Context) othergrpcservice.OtherGRP
 
 		commonSrv := common_v1.NewCommonV1Client(conn.GetConn())
 
-		s.otherGrpc = othergrpcservice_impl.New(commonSrv)
+		s.clientOtherGrpc = othergrpcservice_impl.New(commonSrv)
 	}
-	return s.otherGrpc
+	return s.clientOtherGrpc
 }
 
 func (s *serviceProvider) GrpcImpl(ctx context.Context) *grpcImpl.GrpcImpl {

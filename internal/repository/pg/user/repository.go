@@ -10,13 +10,13 @@ import (
 )
 
 const (
-	userTable           = "users"
-	userIDColumn        = "id"
-	userEmailColumn     = "email"
-	userUsernameColumn  = "username"
-	userPasswordColumn  = "password"
-	userCreatedAtColumn = "created_at"
-	userUpdatedAtColumn = "updated_at"
+	userTable       = "users"
+	idColumn        = "id"
+	emailColumn     = "email"
+	usernameColumn  = "username"
+	passwordColumn  = "password"
+	createdAtColumn = "created_at"
+	updatedAtColumn = "updated_at"
 )
 
 var _ repository.UserRepository = (*userRepository)(nil)
@@ -35,9 +35,9 @@ func New(db db.Client) repository.UserRepository {
 
 func (r userRepository) CreateUser(ctx context.Context, email, username, hashedPassword string) (int64, error) {
 	query, args, err := r.builder.Insert(userTable).
-		Columns(userEmailColumn, userUsernameColumn, userPasswordColumn, userCreatedAtColumn, userUpdatedAtColumn).
+		Columns(emailColumn, usernameColumn, passwordColumn, createdAtColumn, updatedAtColumn).
 		Values(email, username, hashedPassword, time.Now(), time.Now()).
-		Suffix("RETURNING " + userIDColumn).
+		Suffix("RETURNING " + idColumn).
 		ToSql()
 	if err != nil {
 		return 0, err
@@ -54,10 +54,10 @@ func (r userRepository) CreateUser(ctx context.Context, email, username, hashedP
 }
 
 func (r userRepository) GetUserByLogin(ctx context.Context, login string) (model.User, error) {
-	query, args, err := r.builder.Select(userIDColumn, userPasswordColumn).From(userTable).
+	query, args, err := r.builder.Select(idColumn, passwordColumn).From(userTable).
 		Where(sq.Or{
-			sq.Eq{userEmailColumn: login},
-			sq.Eq{userUsernameColumn: login},
+			sq.Eq{emailColumn: login},
+			sq.Eq{usernameColumn: login},
 		}).Limit(1).
 		ToSql()
 	if err != nil {
@@ -76,8 +76,8 @@ func (r userRepository) GetUserByLogin(ctx context.Context, login string) (model
 
 func (r userRepository) GetUserInfo(ctx context.Context, userId int64) (model.User, error) {
 	query, args, err := r.builder.Select(
-		userIDColumn, userEmailColumn, userUsernameColumn, userCreatedAtColumn, userUpdatedAtColumn,
-	).From(userTable).Where(sq.Eq{userIDColumn: userId}).
+		idColumn, emailColumn, usernameColumn, createdAtColumn, updatedAtColumn,
+	).From(userTable).Where(sq.Eq{idColumn: userId}).
 		ToSql()
 	if err != nil {
 		return model.User{}, err

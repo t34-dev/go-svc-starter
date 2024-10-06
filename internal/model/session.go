@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type Device struct {
+type Session struct {
 	ID           int64     `json:"id"`
 	UserID       int64     `json:"user_id"`
 	DeviceKey    string    `json:"device_key"`

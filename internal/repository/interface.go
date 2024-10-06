@@ -7,9 +7,9 @@ import (
 )
 
 type Repository struct {
-	Common CommonRepository
-	User   UserRepository
-	Device DeviceRepository
+	Common  CommonRepository
+	User    UserRepository
+	Session SessionRepository
 }
 
 type CommonRepository interface {
@@ -20,13 +20,13 @@ type UserRepository interface {
 	GetUserByLogin(ctx context.Context, login string) (model.User, error)
 	GetUserInfo(ctx context.Context, userID int64) (model.User, error)
 }
-type DeviceRepository interface {
-	CreateDevice(ctx context.Context, userID int64, deviceKey, deviceName, refreshToken string) error
-	UpsertDevice(ctx context.Context, userID int64, deviceKey, deviceName, refreshToken string) error
-	DeleteDevice(ctx context.Context, userID int64, refreshToken string) error
-	GetDeviceByRefreshToken(ctx context.Context, refreshToken, deviceKey string) (model.Device, error)
-	UpdateDevice(ctx context.Context, userID int64, deviceKey, deviceName, refreshToken string) error
-	GetActiveDevices(ctx context.Context, userID int64) ([]model.Device, error)
-	GetCurrentDevice(ctx context.Context, userID int64) (int64, error)
+type SessionRepository interface {
+	CreateSession(ctx context.Context, userID int64, sessionKey, sessionName, refreshToken string) error
+	UpsertSession(ctx context.Context, userID int64, sessionKey, sessionName, refreshToken string) error
+	DeleteSession(ctx context.Context, userID int64, refreshToken string) error
+	GetSessionByRefreshToken(ctx context.Context, refreshToken, sessionKey string) (model.Session, error)
+	UpdateSession(ctx context.Context, userID int64, sessionKey, sessionName, refreshToken string) error
+	GetActiveSessions(ctx context.Context, userID int64) ([]model.Session, error)
+	GetCurrentSession(ctx context.Context, userID int64) (int64, error)
 	CleanupInactiveSessions(ctx context.Context) error
 }

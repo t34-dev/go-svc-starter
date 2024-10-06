@@ -11,7 +11,7 @@ CREATE TABLE users
     UNIQUE (email, username)
 );
 
-CREATE TABLE devices
+CREATE TABLE sessions
 (
     id            SERIAL PRIMARY KEY,
     user_id       INTEGER REFERENCES users (id),

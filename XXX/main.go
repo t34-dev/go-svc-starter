@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/t34-dev/go-svc-starter/internal/model"
 	"github.com/t34-dev/go-svc-starter/internal/repository"
-	device_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/device"
+	session_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/sessions"
 	user_repository "github.com/t34-dev/go-svc-starter/internal/repository/pg/user"
 	"github.com/t34-dev/go-utils/pkg/db"
 	"github.com/t34-dev/go-utils/pkg/db/pg"
@@ -41,9 +41,9 @@ func NewAuthService(pool *pgxpool.Pool) *AuthService {
 	}
 	txManager := transaction.NewTransactionManager(dbClient.DB())
 	repos := repository.Repository{
-		Common: nil,
-		User:   user_repository.New(dbClient),
-		Device: device_repository.New(dbClient),
+		Common:  nil,
+		User:    user_repository.New(dbClient),
+		Session: session_repository.New(dbClient),
 	}
 	return &AuthService{
 		txManager: txManager,
@@ -85,7 +85,7 @@ func (s *AuthService) Registration(ctx context.Context, email, username, passwor
 		}
 
 		// Вставляем информацию об устройстве (сессии)
-		errTx = s.repos.Device.CreateDevice(ctx, userID, deviceKey, deviceName, refreshToken)
+		errTx = s.repos.Session.CreateSession(ctx, userID, deviceKey, deviceName, refreshToken)
 		if errTx != nil {
 			return errTx
 		}
@@ -124,7 +124,7 @@ func (s *AuthService) Login(ctx context.Context, login, password, deviceKey, dev
 	}
 
 	// Обновляем или создаем устройство (сессию)
-	err = s.repos.Device.UpsertDevice(ctx, user.ID, deviceKey, deviceName, refreshToken)
+	err = s.repos.Session.UpsertSession(ctx, user.ID, deviceKey, deviceName, refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (s *AuthService) Logout(ctx context.Context, token string) error {
 	userID := int64(claims["user_id"].(float64))
 	refreshToken := claims["refresh_token"].(string)
 
-	return s.repos.Device.DeleteDevice(ctx, userID, refreshToken)
+	return s.repos.Session.DeleteSession(ctx, userID, refreshToken)
 }
 
 func (s *AuthService) GetUserInfo(ctx context.Context, userID int64) (*model.UserInfo, error) {
@@ -153,29 +153,29 @@ func (s *AuthService) GetUserInfo(ctx context.Context, userID int64) (*model.Use
 		return nil, fmt.Errorf("failed to get user info: %v", err)
 	}
 
-	currentDeviceID, err := s.repos.Device.GetCurrentDevice(ctx, userID)
+	currentSessionID, err := s.repos.Session.GetCurrentSession(ctx, userID)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf("failed to get current device: %v", err)
 	}
-	user.CurrentDeviceID = currentDeviceID
+	user.CurrentSessionID = currentSessionID
 
-	devices, err := s.repos.Device.GetActiveDevices(ctx, userID)
+	devices, err := s.repos.Session.GetActiveSessions(ctx, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user devices: %v", err)
 	}
 
 	return &model.UserInfo{
-		User:    user,
-		Devices: devices,
+		User:     user,
+		Sessions: devices,
 	}, nil
 }
 
-func (s *AuthService) GetActiveDevices(ctx context.Context, userID int64) ([]model.Device, error) {
-	return s.repos.Device.GetActiveDevices(ctx, userID)
+func (s *AuthService) GetActiveSessions(ctx context.Context, userID int64) ([]model.Session, error) {
+	return s.repos.Session.GetActiveSessions(ctx, userID)
 }
 func (s *AuthService) RefreshToken(ctx context.Context, refreshToken, deviceKey, deviceName string) (*model.AuthTokens, error) {
 	// Находим устройство (сессию)
-	device, err := s.repos.Device.GetDeviceByRefreshToken(ctx, refreshToken, deviceKey)
+	device, err := s.repos.Session.GetSessionByRefreshToken(ctx, refreshToken, deviceKey)
 	if err != nil {
 		return nil, errors.New("invalid refresh token or device")
 	}
@@ -191,7 +191,7 @@ func (s *AuthService) RefreshToken(ctx context.Context, refreshToken, deviceKey,
 	}
 
 	// Обновляем устройство (сессию)
-	err = s.repos.Device.UpdateDevice(ctx, device.UserID, deviceKey, deviceName, newRefreshToken)
+	err = s.repos.Session.UpdateSession(ctx, device.UserID, deviceKey, deviceName, newRefreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func (s *AuthService) ValidateToken(ctx context.Context, token string) (*model.V
 	userID := int64(claims["user_id"].(float64))
 	refreshToken := claims["refresh_token"].(string)
 
-	device, err := s.repos.Device.GetDeviceByRefreshToken(ctx, refreshToken, "")
+	device, err := s.repos.Session.GetSessionByRefreshToken(ctx, refreshToken, "")
 	if err != nil || device.UserID != userID {
 		return &model.ValidateTokenResponse{Valid: false}, nil
 	}
@@ -222,12 +222,12 @@ func (s *AuthService) ValidateToken(ctx context.Context, token string) (*model.V
 	}, nil
 }
 
-func (s *AuthService) RevokeDevice(ctx context.Context, userID int64, deviceID string) error {
-	return s.repos.Device.DeleteDevice(ctx, userID, deviceID)
+func (s *AuthService) RevokeSession(ctx context.Context, userID int64, deviceID string) error {
+	return s.repos.Session.DeleteSession(ctx, userID, deviceID)
 }
 
 func (s *AuthService) cleanupInactiveSessions(ctx context.Context) {
-	err := s.repos.Device.CleanupInactiveSessions(ctx)
+	err := s.repos.Session.CleanupInactiveSessions(ctx)
 	if err != nil {
 		log.Printf("Error cleaning up inactive sessions: %v", err)
 	}
@@ -330,11 +330,11 @@ func main() {
 	fmt.Printf("User Info: %+v\n", userInfo)
 
 	// Вывод информации о активных устройствах
-	activeDevices, err := authService.GetActiveDevices(ctx, userID)
+	activeSessions, err := authService.GetActiveSessions(ctx, userID)
 	if err != nil {
 		log.Fatalf("Failed to get active devices: %v", err)
 	}
-	fmt.Printf("Active Devices: %+v\n", activeDevices)
+	fmt.Printf("Active Sessions: %+v\n", activeSessions)
 
 	// Start a goroutine to clean up inactive sessions periodically
 	go func() {
