@@ -139,6 +139,7 @@ func (s *serviceProvider) ETCD(_ context.Context) etcd.Client {
 		if err != nil {
 			logs.Fatal("failed to create etcd client", zap.Error(err))
 		}
+		closer.Add(cli.Close)
 		s.etcd = cli
 	}
 
@@ -149,8 +150,7 @@ func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.Acce
 		accessManager := access_manager.NewAccessManager(s.ETCD(ctx))
 		var err error
 
-		err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath)
-		if err != nil {
+		if err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath); err != nil {
 			logs.Fatal("failed to update config from files", zap.Error(err))
 		}
 
@@ -164,10 +164,12 @@ func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.Acce
 
 			if err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath); err != nil {
 				logs.Error("failed to update config from files", zap.Error(err))
+				return
 			}
 
 			if err = accessManager.UpdateEtcdStore(ctx); err != nil {
 				logs.Error("failed to update etcd store", zap.Error(err))
+				return
 			}
 		})
 		watcher, err := file.NewWatcher(callback)
@@ -188,24 +190,23 @@ func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.Acce
 			logs.Fatal("failed to update etcd store", zap.Error(err))
 		}
 
-		//// попытка обновить конфигурацию из etcd хранилища
-		//err = accessManager.UpdateConfigsFromEtcd(ctx)
-		//if err != nil {
-		//	logs.Fatal("failed to update ETCD config", zap.Error(err))
-		//}
-		//// обновить конфигурацию только если конфигурация поменялась в хранилище
-		//err = accessManager.WatchConfig(ctx, func(err2 error, key string) {
-		//	// если была какая-то ошибка при обновлении
-		//	// если ошибок не было - значит обновление прошло успешно
-		//	if err2 != nil {
-		//		logs.Fatal("failed to update watch config", zap.Error(err2))
-		//	}
-		//	logs.Info("updated watch config", zap.String("key", key))
-		//})
-		//// при завершении перестать отлеживать изменения
-		//closer.Add(func() error {
-		//	return accessManager.StopWatchConfig()
-		//})
+		// попытка обновить конфигурацию из etcd хранилища
+		if err = accessManager.UpdateConfigsFromEtcd(ctx); err != nil {
+			logs.Fatal("failed to update ETCD config", zap.Error(err))
+		}
+		// обновить конфигурацию только если конфигурация поменялась в хранилище
+		err = accessManager.WatchConfig(ctx, func(err2 error, key string, newValue []byte) {
+			if err2 != nil {
+				logs.Error("failed to update watch config", zap.Error(err2))
+				return
+			}
+			logs.Warn("updated watch config", zap.String("key", key), zap.String("newValue", string(newValue)))
+		})
+		if err != nil {
+			logs.Fatal("failed to update watch config", zap.Error(err))
+		}
+		// при завершении перестать отлеживать изменения
+		closer.Add(accessManager.StopWatchConfig)
 		s.accessManager = accessManager
 	}
 

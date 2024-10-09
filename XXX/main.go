@@ -345,7 +345,8 @@ func main() {
 	// обновить конфигурацию только если конфигурация поменялась в хранилище
 	err = accessManager.WatchConfig(ctx, func(err2 error, key string, newValue []byte) {
 		if err2 != nil {
-			logs.Fatal("failed to update watch config", zap.Error(err2))
+			logs.Error("failed to update watch config", zap.Error(err2))
+			return
 		}
 		logs.Warn("updated watch config", zap.String("key", key), zap.String("newValue", string(newValue)))
 	})
