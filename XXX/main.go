@@ -349,6 +349,16 @@ func main() {
 			return
 		}
 		logs.Warn("updated watch config", zap.String("key", key), zap.String("newValue", string(newValue)))
+
+		// user
+		ok, err := accessManager.CheckAccess("user", "blog", "sex")
+		fmt.Println("user [blog] sex", ok, err)
+		// user
+		ok, err = accessManager.CheckAccess("user", "blog", "write")
+		fmt.Println("user [blog] write", ok, err)
+		// user
+		ok, err = accessManager.CheckAccess("user", "blog", "read")
+		fmt.Println("user [blog] read", ok, err)
 	})
 
 	fmt.Println("====")

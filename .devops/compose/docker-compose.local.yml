@@ -73,4 +73,12 @@ services:
       - "16686:16686" # web
       - "14268:14268"
       - "9411:9411"
-
+  etcd:
+    image: 'bitnami/etcd:latest'
+    container_name: ${COMPOSE_PROJECT_NAME}-etcd
+    environment:
+      - ALLOW_NONE_AUTHENTICATION=yes
+      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
+    ports:
+      - 2378:2379
+      - 2382:2380

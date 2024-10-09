@@ -21,7 +21,7 @@ const (
 )
 
 type AccessManager interface {
-	CheckPermission(sub, obj, act string) (bool, error)
+	CheckAccess(role, resourceName, action string) (bool, error)
 	UpdateConfigsFromEtcd(context.Context) error
 	WatchConfig(context.Context, func(error, string, []byte)) error
 	StopWatchConfig() error
@@ -50,7 +50,7 @@ func NewAccessManager(etcdClient etcd.Client) AccessManager {
 	}
 }
 
-func (a *accessManager) CheckPermission(sub, obj, act string) (bool, error) {
+func (a *accessManager) CheckAccess(role, resourceName, action string) (bool, error) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
@@ -58,7 +58,7 @@ func (a *accessManager) CheckPermission(sub, obj, act string) (bool, error) {
 		return false, fmt.Errorf("enforcer not initialized")
 	}
 
-	return a.enforcer.Enforce(sub, obj, act)
+	return a.enforcer.Enforce(role, resourceName, action)
 }
 
 func (a *accessManager) UpdateConfigsFromEtcd(ctx context.Context) error {
@@ -155,12 +155,21 @@ func (a *accessManager) UpdateEtcdStore(ctx context.Context) error {
 		return fmt.Errorf("model or enforcer not initialized")
 	}
 
-	if err := a.setETCDValue(ctx, modelKey, a.data.modelStr); err != nil {
-		return fmt.Errorf("failed to update model in etcdClient: %w", err)
+	// model
+	if modelVal, err := a.getEtcdValue(ctx, modelKey); err != nil {
+		return fmt.Errorf("failed to get `model` from etcdClient: %w", err)
+	} else if modelVal != a.data.modelStr {
+		if err := a.setETCDValue(ctx, modelKey, a.data.modelStr); err != nil {
+			return fmt.Errorf("failed to update `model` in etcdClient: %w", err)
+		}
 	}
-
-	if err := a.setETCDValue(ctx, policyKey, a.data.policyStr); err != nil {
-		return fmt.Errorf("failed to update policy in etcdClient: %w", err)
+	// policy
+	if policyVal, err := a.getEtcdValue(ctx, policyKey); err != nil {
+		return fmt.Errorf("failed to get `policy` from etcdClient: %w", err)
+	} else if policyVal != a.data.policyStr {
+		if err := a.setETCDValue(ctx, policyKey, a.data.policyStr); err != nil {
+			return fmt.Errorf("failed to update `policy` in etcdClient: %w", err)
+		}
 	}
 
 	return nil

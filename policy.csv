@@ -1,18 +1,18 @@
-# Определение разрешений для ролей
-p, root, *, *
-p, admin, users, read
-p, admin, users, write
-p, admin, logs, read
-p, vip, content, read
-p, vip, content, write
+# Resource hierarchy definition
+g, blog/*, blog
+g, content/*, content
+g, news/*, news
+
+# Role permissions
+p, user, blog, read
+p, user, blog, write
 p, user, content, read
+p, user, news, read
 
-# Определение иерархии ролей
-g, admin, vip
-g, vip, user
+p, editor, blog, write
+p, editor, content, write
+p, editor, news, write
 
-# Назначение пользователей ролям (пример)
-g, alice, root
-g, bob, admin
-g, charlie, vip
-g, dave, user
+p, admin, blog, *
+p, admin, content, *
+p, admin, news, *

@@ -156,11 +156,15 @@ func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.Acce
 
 		// WATCHER
 		callback := file.FileChangeCallback(func(path string, newData []byte, err error) {
+			newConfig := string(newData)
 			if err != nil {
 				logs.Error(fmt.Sprintf("error for file %s: %v", path), zap.Error(err))
 				return
 			}
-			logs.Warn(fmt.Sprintf("config ROLE file %s updated locally", path), zap.String("newConfig", string(newData)))
+			if newConfig == "" {
+				return
+			}
+			logs.Warn(fmt.Sprintf("config ROLE file %s updated locally", path), zap.String("newConfig", newConfig))
 
 			if err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath); err != nil {
 				logs.Error("failed to update config from files", zap.Error(err))
@@ -190,29 +194,29 @@ func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.Acce
 			logs.Fatal("failed to update etcd store", zap.Error(err))
 		}
 
-		// попытка обновить конфигурацию из etcd хранилища
+		// Attempt to update configuration from etcd storage
 		if err = accessManager.UpdateConfigsFromEtcd(ctx); err != nil {
 			logs.Fatal("failed to update ETCD config", zap.Error(err))
 		}
-		// обновить конфигурацию только если конфигурация поменялась в хранилище
+		// Update configuration only if it has changed in the storage
 		err = accessManager.WatchConfig(ctx, func(err2 error, key string, newValue []byte) {
+			newConfig := string(newValue)
 			if err2 != nil {
 				logs.Error("failed to update watch config", zap.Error(err2))
 				return
 			}
-			logs.Warn("updated watch config", zap.String("key", key), zap.String("newValue", string(newValue)))
+			logs.Warn("updated watch config", zap.String("key", key), zap.String("newValue", newConfig))
 		})
 		if err != nil {
 			logs.Fatal("failed to update watch config", zap.Error(err))
 		}
-		// при завершении перестать отлеживать изменения
+		// Stop tracking changes on completion
 		closer.Add(accessManager.StopWatchConfig)
 		s.accessManager = accessManager
 	}
 
 	return s.accessManager
 }
-
 func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
 	if s.txManager == nil {
 		s.txManager = transaction.NewTransactionManager(s.DBClient(ctx).DB())
