@@ -12,12 +12,12 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/interceptor"
 	"github.com/t34-dev/go-svc-starter/internal/logger"
 	"github.com/t34-dev/go-svc-starter/internal/metric"
-	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-svc-starter/pkg/api/access_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/auth_v1"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"github.com/t34-dev/go-utils/pkg/closer"
 	"github.com/t34-dev/go-utils/pkg/logs"
+	"github.com/t34-dev/go-utils/pkg/trace"
 	"go.uber.org/zap"
 	"google.golang.org/grpc/credentials"
 	"log"
@@ -199,7 +199,7 @@ func (a *App) initLogger(_ context.Context) error {
 	return nil
 }
 func (a *App) initTracer(_ context.Context) error {
-	tracing.Init(logs.Logger(), config.App().AppName())
+	trace.Init("localhost:6831", logs.Logger(), config.App().AppName())
 	return nil
 }
 

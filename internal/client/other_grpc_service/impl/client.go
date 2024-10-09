@@ -4,8 +4,8 @@ import (
 	"context"
 	othergrpcservice "github.com/t34-dev/go-svc-starter/internal/client/other_grpc_service"
 	"github.com/t34-dev/go-svc-starter/internal/model"
-	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
+	"github.com/t34-dev/go-utils/pkg/trace"
 )
 
 const isTSL = false
@@ -21,7 +21,7 @@ func New(commonClient common_v1.CommonV1Client) othergrpcservice.OtherGRPCServic
 }
 
 func (c client) GetPost(ctx context.Context, id int64) (*model.Post, error) {
-	ctx, finish := tracing.TraceFunc(ctx, "client.GetPost", map[string]interface{}{"id": id})
+	ctx, finish := trace.TraceFunc(ctx, "client.GetPost", map[string]interface{}{"id": id})
 	defer finish()
 
 	res, err := c.commonClient.GetPost(ctx, &common_v1.PostRequest{Id: id})

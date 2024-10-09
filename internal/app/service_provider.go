@@ -23,18 +23,27 @@ import (
 	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
 	authService "github.com/t34-dev/go-svc-starter/internal/service/auth"
 	commonService "github.com/t34-dev/go-svc-starter/internal/service/common"
+	access_manager "github.com/t34-dev/go-svc-starter/pkg/access-manager"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"github.com/t34-dev/go-utils/pkg/closer"
 	"github.com/t34-dev/go-utils/pkg/db"
 	"github.com/t34-dev/go-utils/pkg/db/pg"
 	"github.com/t34-dev/go-utils/pkg/db/prettier"
 	"github.com/t34-dev/go-utils/pkg/db/transaction"
+	"github.com/t34-dev/go-utils/pkg/etcd"
+	"github.com/t34-dev/go-utils/pkg/file"
 	"github.com/t34-dev/go-utils/pkg/logs"
+	clientv3 "go.etcd.io/etcd/client/v3"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"time"
+)
+
+const (
+	modelPath  = "./model.conf"
+	policyPath = "./policy.csv"
 )
 
 type serviceProvider struct {
@@ -52,6 +61,9 @@ type serviceProvider struct {
 
 	// grpc-clients
 	clientOtherGrpc othergrpcservice.OtherGRPCService
+
+	etcd          etcd.Client
+	accessManager access_manager.AccessManager
 }
 
 func newServiceProvider() *serviceProvider {
@@ -117,6 +129,87 @@ func (s *serviceProvider) DBClient(ctx context.Context) db.Client {
 	}
 
 	return s.dbClient
+}
+func (s *serviceProvider) ETCD(_ context.Context) etcd.Client {
+	if s.etcd == nil {
+		etcdConfig := clientv3.Config{
+			Endpoints: []string{"localhost:2378"},
+		}
+		cli, err := etcd.NewClient(etcdConfig, nil)
+		if err != nil {
+			logs.Fatal("failed to create etcd client", zap.Error(err))
+		}
+		s.etcd = cli
+	}
+
+	return s.etcd
+}
+func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.AccessManager {
+	if s.accessManager == nil {
+		accessManager := access_manager.NewAccessManager(s.ETCD(ctx))
+		var err error
+
+		err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath)
+		if err != nil {
+			logs.Fatal("failed to update config from files", zap.Error(err))
+		}
+
+		// WATCHER
+		callback := file.FileChangeCallback(func(path string, newData []byte, err error) {
+			if err != nil {
+				logs.Error(fmt.Sprintf("error for file %s: %v", path), zap.Error(err))
+				return
+			}
+			logs.Warn(fmt.Sprintf("config ROLE file %s updated locally", path), zap.String("newConfig", string(newData)))
+
+			if err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath); err != nil {
+				logs.Error("failed to update config from files", zap.Error(err))
+			}
+
+			if err = accessManager.UpdateEtcdStore(ctx); err != nil {
+				logs.Error("failed to update etcd store", zap.Error(err))
+			}
+		})
+		watcher, err := file.NewWatcher(callback)
+		if err != nil {
+			logs.Fatal("failed creating watcher", zap.Error(err))
+		}
+
+		err = watcher.WatchFiles([]string{
+			modelPath,
+			policyPath,
+		})
+
+		if err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath); err != nil {
+			logs.Fatal("failed to update config from files", zap.Error(err))
+		}
+
+		if err = accessManager.UpdateEtcdStore(ctx); err != nil {
+			logs.Fatal("failed to update etcd store", zap.Error(err))
+		}
+
+		//// попытка обновить конфигурацию из etcd хранилища
+		//err = accessManager.UpdateConfigsFromEtcd(ctx)
+		//if err != nil {
+		//	logs.Fatal("failed to update ETCD config", zap.Error(err))
+		//}
+		//// обновить конфигурацию только если конфигурация поменялась в хранилище
+		//err = accessManager.WatchConfig(ctx, func(err2 error, key string) {
+		//	// если была какая-то ошибка при обновлении
+		//	// если ошибок не было - значит обновление прошло успешно
+		//	if err2 != nil {
+		//		logs.Fatal("failed to update watch config", zap.Error(err2))
+		//	}
+		//	logs.Info("updated watch config", zap.String("key", key))
+		//})
+		//// при завершении перестать отлеживать изменения
+		//closer.Add(func() error {
+		//	return accessManager.StopWatchConfig()
+		//})
+		s.accessManager = accessManager
+	}
+
+	return s.accessManager
 }
 
 func (s *serviceProvider) TxManager(ctx context.Context) db.TxManager {
@@ -202,7 +295,7 @@ func (s *serviceProvider) GrpcImpl(ctx context.Context) *grpcImpl.GrpcImpl {
 func (s *serviceProvider) Service(ctx context.Context) *service.Service {
 	if s.service == nil {
 		srv := service.Service{}
-		deps := service.NewDeps(srv, *s.Repos(ctx), s.OtherGrpc(ctx))
+		deps := service.NewDeps(srv, *s.Repos(ctx), s.OtherGrpc(ctx), s.AccessManager(ctx))
 		srv.Common = commonService.New(deps)
 		srv.Auth = authService.New(deps)
 		srv.Access = accessService.New(deps)

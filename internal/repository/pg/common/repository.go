@@ -2,8 +2,8 @@ package common_repository
 
 import (
 	"context"
-	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-utils/pkg/db"
+	"github.com/t34-dev/go-utils/pkg/trace"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -25,7 +25,7 @@ func New(db db.Client) repository.CommonRepository {
 }
 
 func (r commonRepository) GetTime(ctx context.Context) (time.Time, error) {
-	ctx, finish := tracing.TraceFunc(ctx, "commonRepository.GetTime", nil)
+	ctx, finish := trace.TraceFunc(ctx, "commonRepository.GetTime", nil)
 	defer finish()
 
 	var dbTime time.Time

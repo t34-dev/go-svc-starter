@@ -4,6 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/t34-dev/go-svc-starter/internal/logger"
+	access_manager "github.com/t34-dev/go-svc-starter/pkg/access-manager"
+	"github.com/t34-dev/go-utils/pkg/etcd"
+	"github.com/t34-dev/go-utils/pkg/logs"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/zap"
 	"log"
 	"time"
 
@@ -322,6 +328,30 @@ func validateToken(tokenString string) (jwt.MapClaims, error) {
 }
 func main() {
 	ctx := context.Background()
+	logs.Init(logger.GetCore(zap.NewAtomicLevelAt(zap.InfoLevel), "logs/XXX.log"))
+
+	// ETCD
+	cli, err := etcd.NewClient(clientv3.Config{
+		Endpoints: []string{"localhost:2378"},
+	}, nil)
+	if err != nil {
+		logs.Fatal("failed to create etcd client", zap.Error(err))
+	}
+	accessManager := access_manager.NewAccessManager(cli)
+	err = accessManager.UpdateConfigsFromEtcd(ctx)
+	if err != nil {
+		logs.Fatal("failed to update ETCD config", zap.Error(err))
+	}
+	// обновить конфигурацию только если конфигурация поменялась в хранилище
+	err = accessManager.WatchConfig(ctx, func(err2 error, key string, newValue []byte) {
+		if err2 != nil {
+			logs.Fatal("failed to update watch config", zap.Error(err2))
+		}
+		logs.Warn("updated watch config", zap.String("key", key), zap.String("newValue", string(newValue)))
+	})
+
+	fmt.Println("====")
+	select {}
 
 	// Строка подключения к базе данных
 	connString := "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable"

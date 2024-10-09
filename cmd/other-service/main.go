@@ -8,11 +8,11 @@ import (
 	jsonplaceholder "github.com/t34-dev/go-svc-starter/internal/client/json_placeholder"
 	jsonplaceholderImpl "github.com/t34-dev/go-svc-starter/internal/client/json_placeholder/impl"
 	"github.com/t34-dev/go-svc-starter/internal/logger"
-	"github.com/t34-dev/go-svc-starter/internal/tracing"
 	"github.com/t34-dev/go-svc-starter/internal/validator"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	"github.com/t34-dev/go-utils/pkg/logs"
 	"github.com/t34-dev/go-utils/pkg/sys/validate"
+	"github.com/t34-dev/go-utils/pkg/trace"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 	"log"
@@ -33,7 +33,7 @@ type server struct {
 
 func (s *server) GetPost(ctx context.Context, req *common_v1.PostRequest) (*common_v1.PostResponse, error) {
 	id := req.GetId()
-	ctx, finish := tracing.TraceFunc(ctx, "server.GetPost", map[string]interface{}{"id": id})
+	ctx, finish := trace.TraceFunc(ctx, "server.GetPost", map[string]interface{}{"id": id})
 	defer finish()
 
 	// validate
