@@ -12,7 +12,7 @@ import (
 func (s *ImplementedCommon) GetDBTime(ctx context.Context, _ *emptypb.Empty) (*common_v1.TimeResponse, error) {
 	tt, err := s.service.Common.GetDBTime(ctx)
 	if err != nil {
-		return nil, sys.NewCommonError(err.Error(), codes.Internal)
+		return nil, sys.NewError(err.Error(), codes.Internal)
 	}
 	return &common_v1.TimeResponse{Time: timestamppb.New(tt)}, err
 }

@@ -27,8 +27,8 @@ func ErrorCodesInterceptor(ctx context.Context, req interface{}, info *grpc.Unar
 	logs.Error(fmt.Sprintf("error: %s", err.Error()))
 
 	switch {
-	case sys.IsCommonError(err):
-		commEr := sys.GetCommonError(err)
+	case sys.IsError(err):
+		commEr := sys.GetError(err)
 		code := toGRPCCode(commEr.Code())
 
 		err = status.Error(code, commEr.Error())

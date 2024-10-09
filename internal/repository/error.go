@@ -6,5 +6,5 @@ import (
 )
 
 var (
-	ErrFailedCreateTable = sys.NewCommonError("failed to create table", codes.Internal)
+	ErrFailedCreateTable = sys.NewError("failed to create table", codes.Internal)
 )
