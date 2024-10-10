@@ -3,7 +3,7 @@ global:
   evaluation_interval: 2s # How often to evaluate rules for aggregation and alerting
 
 rule_files:
-  - "alerts.yml"
+  - "prometheus_alerts.yml"
 
 scrape_configs:
   - job_name: "prometheus"
