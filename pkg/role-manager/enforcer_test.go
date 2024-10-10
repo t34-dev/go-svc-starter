@@ -1,4 +1,4 @@
-package access_manager
+package role_manager
 
 import (
 	"strings"

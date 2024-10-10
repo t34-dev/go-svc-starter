@@ -23,8 +23,8 @@ import (
 	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
 	authService "github.com/t34-dev/go-svc-starter/internal/service/auth"
 	commonService "github.com/t34-dev/go-svc-starter/internal/service/common"
-	access_manager "github.com/t34-dev/go-svc-starter/pkg/access-manager"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
+	role_manager "github.com/t34-dev/go-svc-starter/pkg/role-manager"
 	"github.com/t34-dev/go-utils/pkg/closer"
 	"github.com/t34-dev/go-utils/pkg/db"
 	"github.com/t34-dev/go-utils/pkg/db/pg"
@@ -63,7 +63,7 @@ type serviceProvider struct {
 	clientOtherGrpc othergrpcservice.OtherGRPCService
 
 	etcd          etcd.Client
-	accessManager access_manager.AccessManager
+	accessManager role_manager.RoleManager
 }
 
 func newServiceProvider() *serviceProvider {
@@ -145,9 +145,9 @@ func (s *serviceProvider) ETCD(_ context.Context) etcd.Client {
 
 	return s.etcd
 }
-func (s *serviceProvider) AccessManager(ctx context.Context) access_manager.AccessManager {
+func (s *serviceProvider) AccessManager(ctx context.Context) role_manager.RoleManager {
 	if s.accessManager == nil {
-		accessManager := access_manager.NewAccessManager(s.ETCD(ctx))
+		accessManager := role_manager.NewRoleManager(s.ETCD(ctx))
 		var err error
 
 		if err = accessManager.UpdateConfigsFromFiles(modelPath, policyPath); err != nil {
@@ -300,9 +300,14 @@ func (s *serviceProvider) GrpcImpl(ctx context.Context) *grpcImpl.GrpcImpl {
 func (s *serviceProvider) Service(ctx context.Context) *service.Service {
 	if s.service == nil {
 		srv := service.Service{}
-		deps := service.NewDeps(srv, *s.Repos(ctx), s.OtherGrpc(ctx), s.AccessManager(ctx))
+		deps := service.NewDeps(srv,
+			*s.Repos(ctx),
+			s.OtherGrpc(ctx),
+			s.AccessManager(ctx),
+			s.TxManager(ctx),
+		)
 		srv.Common = commonService.New(deps)
-		srv.Auth = authService.New(deps)
+		srv.Auth = authService.New(deps, []byte(config.Jwt().Secret()))
 		srv.Access = accessService.New(deps)
 		s.service = &srv
 	}

@@ -1,4 +1,4 @@
-package access_manager
+package role_manager
 
 import (
 	"context"
@@ -20,7 +20,7 @@ const (
 	policyKey    = configPrefix + "policy"
 )
 
-type AccessManager interface {
+type RoleManager interface {
 	CheckAccess(role, resourceName, action string) (bool, error)
 	UpdateConfigsFromEtcd(context.Context) error
 	WatchConfig(context.Context, func(error, string, []byte)) error
@@ -29,28 +29,28 @@ type AccessManager interface {
 	UpdateEtcdStore(context.Context) error
 }
 
-type accessManagerData struct {
+type roleManagerData struct {
 	modelStr  string
 	policyStr string
 }
-type accessManager struct {
+type roleManager struct {
 	enforcer   *casbin.Enforcer
 	etcdClient etcd.Client
 	mu         sync.RWMutex
 	watchCh    cliv3.WatchChan
 	stopCh     chan struct{}
-	data       *accessManagerData
+	data       *roleManagerData
 }
 
-func NewAccessManager(etcdClient etcd.Client) AccessManager {
-	return &accessManager{
+func NewRoleManager(etcdClient etcd.Client) RoleManager {
+	return &roleManager{
 		mu:         sync.RWMutex{},
 		etcdClient: etcdClient,
 		stopCh:     make(chan struct{}),
 	}
 }
 
-func (a *accessManager) CheckAccess(role, resourceName, action string) (bool, error) {
+func (a *roleManager) CheckAccess(role, resourceName, action string) (bool, error) {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
@@ -61,7 +61,7 @@ func (a *accessManager) CheckAccess(role, resourceName, action string) (bool, er
 	return a.enforcer.Enforce(role, resourceName, action)
 }
 
-func (a *accessManager) UpdateConfigsFromEtcd(ctx context.Context) error {
+func (a *roleManager) UpdateConfigsFromEtcd(ctx context.Context) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -80,12 +80,12 @@ func (a *accessManager) UpdateConfigsFromEtcd(ctx context.Context) error {
 		return fmt.Errorf("failed to create enforcer: %w", err)
 	}
 	a.enforcer = enforcer
-	a.data = &accessManagerData{modelStr: modelStr, policyStr: policyStr}
+	a.data = &roleManagerData{modelStr: modelStr, policyStr: policyStr}
 
 	return nil
 }
 
-func (a *accessManager) WatchConfig(ctx context.Context, callback func(error, string, []byte)) error {
+func (a *roleManager) WatchConfig(ctx context.Context, callback func(error, string, []byte)) error {
 	// Use a common prefix to track both keys
 	a.watchCh = a.etcdClient.EtcdClient().Watch(context.Background(), configPrefix, cliv3.WithPrefix())
 
@@ -115,14 +115,14 @@ func (a *accessManager) WatchConfig(ctx context.Context, callback func(error, st
 	return nil
 }
 
-func (a *accessManager) StopWatchConfig() error {
+func (a *roleManager) StopWatchConfig() error {
 	if a.watchCh != nil {
 		close(a.stopCh)
 	}
 	return nil
 }
 
-func (a *accessManager) UpdateConfigsFromFiles(modelFile, policyFile string) error {
+func (a *roleManager) UpdateConfigsFromFiles(modelFile, policyFile string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -142,12 +142,12 @@ func (a *accessManager) UpdateConfigsFromFiles(modelFile, policyFile string) err
 		return fmt.Errorf("failed to create enforcer: %w", err)
 	}
 	a.enforcer = enforcer
-	a.data = &accessManagerData{modelStr: string(modelBytes), policyStr: string(policyBytes)}
+	a.data = &roleManagerData{modelStr: string(modelBytes), policyStr: string(policyBytes)}
 
 	return nil
 }
 
-func (a *accessManager) UpdateEtcdStore(ctx context.Context) error {
+func (a *roleManager) UpdateEtcdStore(ctx context.Context) error {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
@@ -175,7 +175,7 @@ func (a *accessManager) UpdateEtcdStore(ctx context.Context) error {
 	return nil
 }
 
-func (a *accessManager) getEtcdValue(ctx context.Context, key string) (string, error) {
+func (a *roleManager) getEtcdValue(ctx context.Context, key string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 
@@ -191,7 +191,7 @@ func (a *accessManager) getEtcdValue(ctx context.Context, key string) (string, e
 	return string(resp.Kvs[0].Value), nil
 }
 
-func (a *accessManager) setETCDValue(ctx context.Context, key, value string) error {
+func (a *roleManager) setETCDValue(ctx context.Context, key, value string) error {
 	ctx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 

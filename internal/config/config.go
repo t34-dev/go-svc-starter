@@ -27,6 +27,7 @@ type config struct {
 	Prometheus prometheusConfig `yaml:"prometheus"`
 	Pg         pgConfig         `yaml:"pg"`
 	MS         msConfig         `yaml:"ms"`
+	Jwt        jwtConfig        `yaml:"jwt"`
 }
 
 func App() AppConfig {
@@ -45,6 +46,9 @@ func MS() MSConfig {
 
 func Http() HttpConfig {
 	return &cfg.Http
+}
+func Jwt() JwtConfig {
+	return &cfg.Jwt
 }
 func Prometheus() PrometheusConfig {
 	return &cfg.Prometheus
