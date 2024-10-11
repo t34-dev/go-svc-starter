@@ -136,7 +136,13 @@ func (s *serviceProvider) ETCD(_ context.Context) etcd.Client {
 		etcdConfig := clientv3.Config{
 			Endpoints: []string{"localhost:2378"},
 		}
-		cli, err := etcd.NewClient(etcdConfig, nil)
+		logFunc := func(ctx context.Context, q etcd.Query) {
+			logs.Info("Etcd operation",
+				zap.String("operation", q.Name),
+				zap.String("key", q.Key),
+				zap.String("value", q.Val))
+		}
+		cli, err := etcd.NewClient(etcdConfig, etcd.WithLogFunc(logFunc))
 		if err != nil {
 			logs.Fatal("failed to create etcd client", zap.Error(err))
 		}

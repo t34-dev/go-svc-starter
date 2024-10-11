@@ -56,9 +56,17 @@ func main() {
 	logs.Init(logger.GetCore(zap.NewAtomicLevelAt(zap.InfoLevel), "logs/XXX.log"))
 
 	// ETCD
-	cli, err := etcd.NewClient(clientv3.Config{
+	etcdConfig := clientv3.Config{
 		Endpoints: []string{"localhost:2378"},
-	}, nil)
+	}
+	logFunc := func(ctx context.Context, q etcd.Query) {
+		logs.Info("Etcd operation",
+			zap.String("operation", q.Name),
+			zap.String("key", q.Key),
+			zap.String("value", q.Val))
+	}
+	cli, err := etcd.NewClient(etcdConfig, etcd.WithLogFunc(logFunc))
+
 	if err != nil {
 		logs.Fatal("failed to create etcd client", zap.Error(err))
 	}

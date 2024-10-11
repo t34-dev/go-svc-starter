@@ -59,7 +59,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	logs.Init(logger.GetCore(logger.GetAtomicLevel(), "logs/other_service.log"))
-	if err := trace.Init("localhost:6831", serviceName, trace.WithLogger(logs.Logger())); err != nil {
+	if err := trace.Init("localhost:6831", serviceName); err != nil {
 		log.Fatalln(err)
 	}
 
