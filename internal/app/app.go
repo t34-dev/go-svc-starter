@@ -199,8 +199,7 @@ func (a *App) initLogger(_ context.Context) error {
 	return nil
 }
 func (a *App) initTracer(_ context.Context) error {
-	trace.Init("localhost:6831", logs.Logger(), config.App().AppName())
-	return nil
+	return trace.Init("localhost:6831", config.App().AppName(), trace.WithLogger(logs.Logger()))
 }
 
 func (a *App) initServiceProvider(_ context.Context) error {

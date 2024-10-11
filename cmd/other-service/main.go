@@ -56,10 +56,12 @@ func (s *server) GetPost(ctx context.Context, req *common_v1.PostRequest) (*comm
 
 func main() {
 	if err := logger.SetLogLevel("info"); err != nil {
-		log.Println(err)
+		log.Fatalln(err)
 	}
 	logs.Init(logger.GetCore(logger.GetAtomicLevel(), "logs/other_service.log"))
-	trace.Init("localhost:6831", logs.Logger(), serviceName)
+	if err := trace.Init("localhost:6831", serviceName, trace.WithLogger(logs.Logger())); err != nil {
+		log.Fatalln(err)
+	}
 
 	lis, err := net.Listen("tcp", fmt.Sprintf("localhost:%d", grpcPort))
 	if err != nil {
