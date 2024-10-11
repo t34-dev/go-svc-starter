@@ -6,6 +6,7 @@ import (
 	"github.com/t34-dev/go-svc-starter/internal/logger"
 	"github.com/t34-dev/go-svc-starter/internal/service"
 	auth_service "github.com/t34-dev/go-svc-starter/internal/service/auth"
+	role_service "github.com/t34-dev/go-svc-starter/internal/service/role"
 	role_manager "github.com/t34-dev/go-svc-starter/pkg/role-manager"
 	"github.com/t34-dev/go-utils/pkg/etcd"
 	"github.com/t34-dev/go-utils/pkg/logs"
@@ -24,10 +25,6 @@ import (
 	"github.com/t34-dev/go-utils/pkg/db/transaction"
 )
 
-type AuthService struct {
-	service service.Service
-}
-
 func NewService(pool *pgxpool.Pool) service.Service {
 	dbClient, err := pg.New(pool, nil)
 	if err != nil {
@@ -41,8 +38,15 @@ func NewService(pool *pgxpool.Pool) service.Service {
 	}
 
 	serv := service.Service{}
-	deps := service.NewDeps(serv, repos, nil, role_manager.NewRoleManager(nil), txManager)
-	serv.Auth = auth_service.New(deps, []byte("KEY"))
+	opts := service.Options{
+		Service:      serv,
+		OtherService: nil,
+		Repos:        repos,
+		TxManager:    txManager,
+		RoleManager:  role_manager.NewRoleManager(nil),
+	}
+	serv.Auth = auth_service.New(opts, []byte("KEY"))
+	serv.Role = role_service.New(opts)
 
 	return serv
 }
@@ -138,21 +142,21 @@ func main() {
 	fmt.Printf("4) User Info: %+v\n", userInfo)
 
 	// Get all roles
-	roles, err := srv.Auth.GetAllRoles(ctx)
+	roles, err := srv.Role.GetAllRoles(ctx)
 	if err != nil {
 		log.Fatalf("Failed to get all roles: %v", err)
 	}
 	fmt.Printf("5) All roles: %+v\n", roles)
 
 	// Create a new role
-	newRoleID, err := srv.Auth.CreateRole(ctx, "NewRole")
+	newRoleID, err := srv.Role.CreateRole(ctx, "NewRole")
 	if err != nil {
 		log.Fatalf("Failed to create new role: %v", err)
 	}
 	fmt.Printf("6) Created new role with ID: %d\n", newRoleID)
 
-	// Assign role to user
-	err = srv.Auth.AssignRoleToUser(ctx, userID, newRoleID)
+	// Add role to user
+	err = srv.Role.AddRoleToUser(ctx, userID, newRoleID)
 	if err != nil {
 		log.Fatalf("Failed to assign role to user: %v", err)
 	}

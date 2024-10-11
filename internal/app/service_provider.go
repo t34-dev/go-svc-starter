@@ -23,6 +23,7 @@ import (
 	accessService "github.com/t34-dev/go-svc-starter/internal/service/access"
 	authService "github.com/t34-dev/go-svc-starter/internal/service/auth"
 	commonService "github.com/t34-dev/go-svc-starter/internal/service/common"
+	roleService "github.com/t34-dev/go-svc-starter/internal/service/role"
 	"github.com/t34-dev/go-svc-starter/pkg/api/common_v1"
 	role_manager "github.com/t34-dev/go-svc-starter/pkg/role-manager"
 	"github.com/t34-dev/go-utils/pkg/closer"
@@ -145,7 +146,7 @@ func (s *serviceProvider) ETCD(_ context.Context) etcd.Client {
 
 	return s.etcd
 }
-func (s *serviceProvider) AccessManager(ctx context.Context) role_manager.RoleManager {
+func (s *serviceProvider) RoleManager(ctx context.Context) role_manager.RoleManager {
 	if s.accessManager == nil {
 		accessManager := role_manager.NewRoleManager(s.ETCD(ctx))
 		var err error
@@ -300,15 +301,17 @@ func (s *serviceProvider) GrpcImpl(ctx context.Context) *grpcImpl.GrpcImpl {
 func (s *serviceProvider) Service(ctx context.Context) *service.Service {
 	if s.service == nil {
 		srv := service.Service{}
-		deps := service.NewDeps(srv,
-			*s.Repos(ctx),
-			s.OtherGrpc(ctx),
-			s.AccessManager(ctx),
-			s.TxManager(ctx),
-		)
-		srv.Common = commonService.New(deps)
-		srv.Auth = authService.New(deps, []byte(config.Jwt().Secret()))
-		srv.Access = accessService.New(deps)
+		opts := service.Options{
+			Service:      srv,
+			Repos:        *s.Repos(ctx),
+			OtherService: s.OtherGrpc(ctx),
+			RoleManager:  s.RoleManager(ctx),
+			TxManager:    s.TxManager(ctx),
+		}
+		srv.Common = commonService.New(opts)
+		srv.Auth = authService.New(opts, []byte(config.Jwt().Secret()))
+		srv.Role = roleService.New(opts)
+		srv.Access = accessService.New(opts)
 		s.service = &srv
 	}
 

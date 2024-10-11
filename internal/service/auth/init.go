@@ -15,10 +15,10 @@ var jwtKey = []byte("")
 var _ service.AuthService = &authService{}
 
 type authService struct {
-	opt service.Dependencies
+	opt service.Options
 }
 
-func New(opt service.Dependencies, secretKey []byte) service.AuthService {
+func New(opt service.Options, secretKey []byte) service.AuthService {
 	jwtKey = secretKey
 	return &authService{
 		opt: opt,
@@ -220,30 +220,6 @@ func (s *authService) ValidateToken(ctx context.Context, token string) (*model.V
 
 func (s *authService) RevokeSession(ctx context.Context, sessionID uuid.UUID) error {
 	return s.opt.Repos.Session.DeleteSession(ctx, sessionID)
-}
-
-func (s *authService) GetAllRoles(ctx context.Context) ([]model.Role, error) {
-	return s.opt.Repos.Role.GetAllRoles(ctx)
-}
-
-func (s *authService) AssignRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error {
-	return s.opt.Repos.Role.AssignRoleToUser(ctx, userID, roleID)
-}
-
-func (s *authService) RemoveRoleFromUser(ctx context.Context, userID uuid.UUID, roleID int64) error {
-	return s.opt.Repos.Role.RemoveRoleFromUser(ctx, userID, roleID)
-}
-
-func (s *authService) CreateRole(ctx context.Context, roleName string) (int64, error) {
-	return s.opt.Repos.Role.CreateRole(ctx, roleName)
-}
-
-func (s *authService) DeleteRole(ctx context.Context, roleID int64) error {
-	return s.opt.Repos.Role.DeleteRole(ctx, roleID)
-}
-
-func (s *authService) UpdateRole(ctx context.Context, roleID int64, newRoleName string) error {
-	return s.opt.Repos.Role.UpdateRole(ctx, roleID, newRoleName)
 }
 
 func (s *authService) CleanupInactiveSessions(ctx context.Context) error {

@@ -159,7 +159,6 @@ func (a *App) initConfig(ctx context.Context) error {
 		return err
 	}
 
-	fmt.Println("E", config.Jwt().Secret())
 	ticker := time.NewTicker(1 * time.Second)
 	go func() {
 		for {

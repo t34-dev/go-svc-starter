@@ -35,7 +35,7 @@ type SessionRepository interface {
 type RoleRepository interface {
 	GetAllRoles(ctx context.Context) ([]model.Role, error)
 	GetUserRoles(ctx context.Context, userID uuid.UUID) ([]model.Role, error)
-	AssignRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error
+	AddRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error
 	RemoveRoleFromUser(ctx context.Context, userID uuid.UUID, roleID int64) error
 	CreateRole(ctx context.Context, roleName string) (int64, error)
 	DeleteRole(ctx context.Context, roleID int64) error

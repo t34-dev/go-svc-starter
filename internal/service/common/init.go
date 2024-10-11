@@ -11,10 +11,10 @@ import (
 var _ service.CommonService = &commonService{}
 
 type commonService struct {
-	opt service.Dependencies
+	opt service.Options
 }
 
-func New(opt service.Dependencies) service.CommonService {
+func New(opt service.Options) service.CommonService {
 	return &commonService{
 		opt: opt,
 	}

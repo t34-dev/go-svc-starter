@@ -95,7 +95,7 @@ func (r roleRepository) GetUserRoles(ctx context.Context, userID uuid.UUID) ([]m
 	return roles, nil
 }
 
-func (r roleRepository) AssignRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error {
+func (r roleRepository) AddRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error {
 	query, args, err := r.builder.Insert(userRoleTable).
 		Columns(userIDColumn, roleIDColumn).
 		Values(userID, roleID).
@@ -106,7 +106,7 @@ func (r roleRepository) AssignRoleToUser(ctx context.Context, userID uuid.UUID, 
 	}
 
 	q := db.Query{
-		Name:     "role_repository.AssignRoleToUser",
+		Name:     "role_repository.AddRoleToUser",
 		QueryRaw: query,
 	}
 

@@ -11,33 +11,19 @@ import (
 	"time"
 )
 
-type Dependencies struct {
-	Service       Service
-	Repos         repository.Repository
-	OtherService  othergrpcservice.OtherGRPCService
-	AccessManager role_manager.RoleManager
-	TxManager     db.TxManager
-}
-
-func NewDeps(service Service,
-	repos repository.Repository,
-	otherService othergrpcservice.OtherGRPCService,
-	accessManager role_manager.RoleManager,
-	txManager db.TxManager,
-) Dependencies {
-	return Dependencies{
-		Service:       service,
-		Repos:         repos,
-		OtherService:  otherService,
-		AccessManager: accessManager,
-		TxManager:     txManager,
-	}
+type Options struct {
+	Service      Service
+	Repos        repository.Repository
+	OtherService othergrpcservice.OtherGRPCService
+	RoleManager  role_manager.RoleManager
+	TxManager    db.TxManager
 }
 
 type Service struct {
 	Common CommonService
 	Access AccessService
 	Auth   AuthService
+	Role   RoleService
 }
 
 type CommonService interface {
@@ -57,11 +43,13 @@ type AuthService interface {
 	RefreshToken(ctx context.Context, refreshToken string) (*model.AuthTokens, error)
 	ValidateToken(ctx context.Context, token string) (*model.ValidateTokenResponse, error)
 	RevokeSession(ctx context.Context, sessionID uuid.UUID) error
+	CleanupInactiveSessions(ctx context.Context) error
+}
+type RoleService interface {
 	GetAllRoles(ctx context.Context) ([]model.Role, error)
-	AssignRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error
+	AddRoleToUser(ctx context.Context, userID uuid.UUID, roleID int64) error
 	RemoveRoleFromUser(ctx context.Context, userID uuid.UUID, roleID int64) error
 	CreateRole(ctx context.Context, roleName string) (int64, error)
 	DeleteRole(ctx context.Context, roleID int64) error
 	UpdateRole(ctx context.Context, roleID int64, newRoleName string) error
-	CleanupInactiveSessions(ctx context.Context) error
 }

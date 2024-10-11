@@ -8,10 +8,10 @@ import (
 var _ service.AccessService = &accessService{}
 
 type accessService struct {
-	opt service.Dependencies
+	opt service.Options
 }
 
-func New(opt service.Dependencies) service.AccessService {
+func New(opt service.Options) service.AccessService {
 	return &accessService{
 		opt: opt,
 	}
